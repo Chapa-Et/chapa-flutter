@@ -16,6 +16,7 @@ class Chapa {
   String title;
   String desc;
   String namedRouteFallBack;
+  List<Map<String, dynamic>>? subaccounts;
 
   Chapa.paymentParameters({
     required this.context,
@@ -30,6 +31,7 @@ class Chapa {
     required this.title,
     required this.desc,
     required this.namedRouteFallBack,
+    this.subaccounts,
   }) {
     _validateKeys();
     currency = currency.toUpperCase();
@@ -62,6 +64,20 @@ class Chapa {
 
   void initatePayment() async {
     intilizeMyPayment(context, publicKey, email, phone, amount, currency,
-        firstName, lastName, txRef, title, desc, namedRouteFallBack);
+        firstName, lastName, txRef, title, desc, namedRouteFallBack, subaccounts);
+  }
+
+  Future<void> bulkTransfer(
+    String authorization,
+    String title,
+    String currency,
+    List<Map<String, dynamic>> bulkData,
+  ) async {
+    initiateBulkTransfer(
+      authorization,
+      title,
+      currency,
+      bulkData,
+    );
   }
 }
