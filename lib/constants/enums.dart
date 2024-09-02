@@ -1,4 +1,11 @@
-enum LocalPaymentMethods { telebirr, mpessa, amole, cbebirr, ebirr, awashbirr }
+enum LocalPaymentMethods {
+  telebirr,
+  mpessa,
+  amole,
+  cbebirr,
+  ebirr,
+  awashbirr,
+}
 
 enum RequestType {
   get,
@@ -6,4 +13,19 @@ enum RequestType {
   patch,
   put,
   delete,
+}
+
+enum PaymentStatus {
+  pending,
+  success,
+}
+
+enum Mode {
+  live,
+  testing,
+}
+
+enum VerificationType {
+  ussd,
+  otp,
 }

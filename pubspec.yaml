@@ -4,19 +4,24 @@ version: 0.0.6
 homepage: https://github.com/chapa-et/chapa-flutter
 
 environment:
-  sdk: ">=2.15.0<3.0.0"
-  flutter: ">=1.17.0"
+ sdk: '>=3.4.1 <4.0.0'
+ flutter: ">=3.4.1"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.13.0
-  flutter_inappwebview: ^5.4.3+7
-  connectivity_plus: ^2.3.6+1
-  fluttertoast: ^8.0.9
+  http: 
+  flutter_inappwebview: 6.0.0 
+  connectivity_plus: 
+  fluttertoast: 
+  dio:
+  encrypt:
+  pointycastle:
+  bloc: ^8.1.4
+  get: ^4.6.6
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints:

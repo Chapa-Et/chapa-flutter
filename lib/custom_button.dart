@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_state_manager/get_state_manager.dart';
 
 // ignore: must_be_immutable
 class CustomButton extends StatelessWidget {
   Function onPressed;
   Color? backgroundColor;
+  String title;
 
-  CustomButton({super.key, required this.onPressed, this.backgroundColor});
+  CustomButton(
+      {super.key,
+      required this.onPressed,
+      this.backgroundColor,
+      required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +28,10 @@ class CustomButton extends StatelessWidget {
           onPressed();
         },
         child: Text(
-          "Pay",
+          title,
+          style: TextStyle(
+            color: Colors.white,
+          ),
         ),
       ),
     );

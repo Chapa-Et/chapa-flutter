@@ -70,7 +70,8 @@ class ApiClient {
         default:
           throw "Request Type is not found";
       }
-
+      print(path);
+      print(response);
       try {
         if (response == null) {
           return Success(
@@ -82,6 +83,10 @@ class ApiClient {
         final successResponse = fromJsonSuccess(response);
         return Success(body: successResponse);
       } catch (e) {
+        print("error in catch Success Response");
+        print(e);
+        print(response);
+
         return Success(
             body: ApiResponse(
           code: 200,
@@ -89,6 +94,9 @@ class ApiClient {
         ));
       }
     } on DioException catch (e) {
+      print("error in catch");
+      print(e.response);
+      print(e.type);
       try {
         switch (e.type) {
           case DioExceptionType.connectionError:

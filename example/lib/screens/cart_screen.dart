@@ -1,4 +1,6 @@
-import 'package:badges/badges.dart';
+import 'dart:math';
+
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_app/database/db_helper.dart';
@@ -47,7 +49,7 @@ class _CartScreenState extends State<CartScreen> {
         centerTitle: true,
         title: const Text('My Shopping Cart'),
         actions: [
-          Badge(
+          badge.Badge(
             badgeContent: Consumer<CartProvider>(
               builder: (context, value, child) {
                 return Text(
@@ -57,7 +59,7 @@ class _CartScreenState extends State<CartScreen> {
                 );
               },
             ),
-            position: const BadgePosition(start: 30, bottom: 30),
+            position: badge.BadgePosition.custom(start: 30, bottom: 30),
             child: IconButton(
               onPressed: () {},
               icon: const Icon(Icons.shopping_cart),
@@ -251,21 +253,36 @@ class _CartScreenState extends State<CartScreen> {
       ),
       bottomNavigationBar: InkWell(
         onTap: () {
+          var r = Random();
+
+          const _chars =
+              'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+          String transactionRef =
+              List.generate(10, (index) => _chars[r.nextInt(_chars.length)])
+                  .join();
+
+          ///
+          ///
+          ///
           ///
           Chapa.paymentParameters(
-            context: context, // context
-            publicKey: 'CHASECK_TEST-',
-            currency: 'etb',
-            amount: '300',
-            email: 'xyz@gmail.com',
-            phone: '911223344',
-            firstName: 'testname',
-            lastName: 'lastName',
-            txRef: '55ttyyy',
-            title: 'title',
-            desc: 'desc',
-            namedRouteFallBack: '/checkoutPage', // fall back route name
-          );
+              context: context, // context
+              publicKey: 'CHASECK-bQNSo2l4wDi3S8YDONvHD8d2D92IWQWF',
+              currency: 'etb',
+              amount: '10',
+              email: 'xyz@gmail.com',
+              phone: '0964001822',
+              firstName: 'Woynshet',
+              lastName: 'Bilihatu',
+              txRef: transactionRef,
+              title: 'Test Payment',
+              desc: 'Text Paymentd',
+              defaultCheckout: false,
+              nativeCheckout: true,
+              namedRouteFallBack: '/checkoutPage',
+              encryptionKey: "YgBWLO56ArTemxtvdij6RKqw"
+              // fall back route name
+              );
         },
         child: Container(
           color: Colors.yellow.shade600,
@@ -320,11 +337,11 @@ class ReusableWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.subtitle1,
+            //style: Theme.of(context).textTheme.subtitle1,
           ),
           Text(
             value.toString(),
-            style: Theme.of(context).textTheme.subtitle2,
+            //style: Theme.of(context).textTheme.subtitle2,
           ),
         ],
       ),

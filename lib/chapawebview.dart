@@ -45,27 +45,27 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   void checkConnectivity() {
     connection = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-      if (result == ConnectivityResult.none) {
+        .listen((List<ConnectivityResult> result) {
+      if (result.contains(ConnectivityResult.none)) {
         setState(() {
           isOffline = true;
         });
         showErrorToast(ChapaStrings.connectionError);
 
         exitPaymentPage(ChapaStrings.connectionError);
-      } else if (result == ConnectivityResult.mobile) {
+      } else if (result.contains(ConnectivityResult.mobile)) {
         setState(() {
           isOffline = false;
         });
-      } else if (result == ConnectivityResult.wifi) {
+      } else if (result.contains(ConnectivityResult.wifi)) {
         setState(() {
           isOffline = false;
         });
-      } else if (result == ConnectivityResult.ethernet) {
+      } else if (result.contains(ConnectivityResult.ethernet)) {
         setState(() {
           isOffline = false;
         });
-      } else if (result == ConnectivityResult.bluetooth) {
+      } else if (result.contains(ConnectivityResult.bluetooth)) {
         setState(() {
           isOffline = false;
         });
@@ -99,7 +99,11 @@ class _ChapaWebViewState extends State<ChapaWebView> {
         body: Column(children: <Widget>[
           Expanded(
             child: InAppWebView(
-              initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
+              initialUrlRequest: URLRequest(
+                url: WebUri(
+                  (widget.url),
+                ),
+              ),
               onWebViewCreated: (controller) {
                 setState(() {
                   webViewController = controller;

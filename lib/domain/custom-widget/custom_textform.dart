@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 // ignore: must_be_immutable
 class CustomTextForm extends StatefulWidget {
   CustomTextForm(
-      {Key? key,
+      {super.key,
       required this.controller,
       this.enableBorder = true,
       this.hintText = "",
@@ -28,8 +28,7 @@ class CustomTextForm extends StatefulWidget {
       this.autovalidateMode = AutovalidateMode.onUserInteraction,
       this.inputFormatter,
       this.maxLine = 2,
-      this.minLine = 1})
-      : super(key: key);
+      this.minLine = 1});
   final TextEditingController controller;
   TextInputType keyboardType;
   TextInputAction textInputAction;

@@ -1,4 +1,4 @@
-import 'package:badges/badges.dart';
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_app/model/item_model.dart';
@@ -8,7 +8,7 @@ import 'package:shopping_cart_app/model/cart_model.dart';
 import 'package:shopping_cart_app/screens/cart_screen.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({super.key});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -82,6 +82,9 @@ class _ProductListState extends State<ProductList> {
         cart.addCounter();
         print('Product Added to cart');
       }).onError((error, stackTrace) {
+        cart.addTotalPrice(products[index].price.toDouble());
+        cart.addCounter();
+        print("Error here");
         print(error.toString());
       });
     }
@@ -91,7 +94,7 @@ class _ProductListState extends State<ProductList> {
         centerTitle: true,
         title: const Text('Product List'),
         actions: [
-          Badge(
+          badge.Badge(
             badgeContent: Consumer<CartProvider>(
               builder: (context, value, child) {
                 return Text(
@@ -101,7 +104,7 @@ class _ProductListState extends State<ProductList> {
                 );
               },
             ),
-            position: const BadgePosition(start: 30, bottom: 30),
+            position: badge.BadgePosition.custom(start: 30, bottom: 30),
             child: IconButton(
               onPressed: () {
                 Navigator.push(
@@ -195,7 +198,8 @@ class _ProductListState extends State<ProductList> {
                     ),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.blueGrey.shade900),
+                       //   primary: Colors.blueGrey.shade900,
+                        ),
                         onPressed: () {
                           saveData(index);
                         },

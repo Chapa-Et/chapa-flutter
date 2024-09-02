@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import '../chapawebview.dart';
-import '../model/data.dart';
+import '../data/model/data.dart';
 
 Future<String> intilizeMyPayment(
   BuildContext context,
@@ -31,29 +31,39 @@ Future<String> intilizeMyPayment(
       'currency': currency.toUpperCase(),
       'first_name': firstName,
       'last_name': lastName,
+      "email": email,
       'tx_ref': transactionReference,
       'customization[title]': customTitle,
       'customization[description]': customDescription
     },
   );
-  var jsonResponse = json.decode(response.body);
-  if (response.statusCode == 400) {
-    showToast(jsonResponse);
-  } else if (response.statusCode == 200) {
-    ResponseData res = ResponseData.fromJson(jsonResponse);
 
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => ChapaWebView(
-                url: res.data.checkoutUrl.toString(),
-                fallBackNamedUrl: fallBackNamedRoute,
-                transactionReference: transactionReference,
-                amountPaid: amount,
-              )),
-    );
+  try {
+    var jsonResponse = json.decode(response.body);
+    if (response.statusCode == 400) {
+      showToast(jsonResponse);
+    } else if (response.statusCode == 200) {
+      ResponseData res = ResponseData.fromJson(jsonResponse);
+      // ignore: use_build_context_synchronously
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => ChapaWebView(
+                  url: res.data.checkoutUrl.toString(),
+                  fallBackNamedUrl: fallBackNamedRoute,
+                  transactionReference: transactionReference,
+                  amountPaid: amount,
+                )),
+      );
 
-    return res.data.checkoutUrl.toString();
+      return res.data.checkoutUrl.toString();
+    } else {
+      print("Http Error");
+      print(response.body);
+    }
+  } catch (e) {
+    print(e);
+    print("Exception here");
   }
 
   return '';
