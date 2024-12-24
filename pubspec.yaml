@@ -12,7 +12,7 @@ dependencies:
     sdk: flutter
 
   http: 
-  flutter_inappwebview: 6.0.0 
+  flutter_inappwebview: ^6.1.5 
   connectivity_plus: 
   fluttertoast: 
   dio:
@@ -20,8 +20,20 @@ dependencies:
   pointycastle:
   bloc: ^8.1.4
   get: ^4.6.6
+  intl: ^0.20.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints:
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/cbebirr.png
+    - assets/images/ebirr.png
+    - assets/images/telebirr.png
+    - assets/images/ethiopia-flag.png
+    - assets/images/mpesa.png
+    - assets/images/success-icon.png
+    - assets/images/chapa-logo.png
