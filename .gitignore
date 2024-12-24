@@ -31,3 +31,5 @@ build/
 .gradle
 /example/ios/Podfile.lock
 /coverage/
+.flutter-plugins
+.flutter-plugins-dependencies
