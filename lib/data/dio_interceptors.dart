@@ -31,7 +31,7 @@ class AuthorizationInterceptor extends InterceptorsWrapper {
       return handler.reject(
         DioException(
           response: response,
-          error: 'Token Expired',
+          error: 'Bearer Token Expired',
           type: DioExceptionType.unknown,
           requestOptions: response.requestOptions,
         ),

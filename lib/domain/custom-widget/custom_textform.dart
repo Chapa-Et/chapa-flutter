@@ -8,7 +8,7 @@ class CustomTextForm extends StatefulWidget {
       required this.controller,
       this.enableBorder = true,
       this.hintText = "",
-      this.lableText = "",
+      this.labelText = "",
       this.cursorColor = Colors.green,
       this.filled = false,
       this.filledColor = Colors.transparent,
@@ -16,10 +16,10 @@ class CustomTextForm extends StatefulWidget {
       this.obscuringCharacter = "*",
       this.readOnly = false,
       this.obscureText = false,
-      this.lableTextStyle = const TextStyle(color: Colors.black),
+      this.labelTextStyle = const TextStyle(color: Colors.black),
       this.prefix,
       this.suffix,
-      this.textStyle = const TextStyle(color: Colors.black),
+      this.textStyle,
       this.textInputAction = TextInputAction.done,
       this.keyboardType = TextInputType.text,
       this.validator,
@@ -40,12 +40,12 @@ class CustomTextForm extends StatefulWidget {
   final AutovalidateMode? autovalidateMode;
 
   final String hintText;
-  final String lableText;
+  final String labelText;
   final String obscuringCharacter;
 
-  final TextStyle hintTextStyle;
-  final TextStyle lableTextStyle;
-  final TextStyle textStyle;
+  final TextStyle? hintTextStyle;
+  final TextStyle labelTextStyle;
+  final TextStyle? textStyle;
 
   final Color filledColor;
   final Color cursorColor;
@@ -81,8 +81,8 @@ class _CustomTextFormState extends State<CustomTextForm> {
         fillColor: widget.filledColor,
         hintText: widget.hintText,
         hintStyle: widget.hintTextStyle,
-        labelText: widget.lableText,
-        labelStyle: widget.lableTextStyle,
+        labelText: widget.labelText,
+        labelStyle: widget.labelTextStyle,
         isDense: true,
         prefixIcon: widget.prefix,
         focusedErrorBorder: OutlineInputBorder(

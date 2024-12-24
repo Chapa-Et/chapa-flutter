@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:chapasdk/constants/enums.dart';
+import 'package:chapasdk/domain/constants/enums.dart';
 import 'package:chapasdk/data/dio_client.dart';
 import 'package:chapasdk/data/model/response/api_error_response.dart';
 import 'package:chapasdk/data/model/response/api_response.dart';
@@ -67,11 +67,8 @@ class ApiClient {
         case RequestType.put:
           response = await dioClient.put(path, options: options, data: data);
           break;
-        default:
-          throw "Request Type is not found";
       }
-      print(path);
-      print(response);
+
       try {
         if (response == null) {
           return Success(
@@ -83,10 +80,6 @@ class ApiClient {
         final successResponse = fromJsonSuccess(response);
         return Success(body: successResponse);
       } catch (e) {
-        print("error in catch Success Response");
-        print(e);
-        print(response);
-
         return Success(
             body: ApiResponse(
           code: 200,
@@ -94,9 +87,7 @@ class ApiClient {
         ));
       }
     } on DioException catch (e) {
-      print("error in catch");
-      print(e.response);
-      print(e.type);
+     
       try {
         switch (e.type) {
           case DioExceptionType.connectionError:
@@ -105,12 +96,24 @@ class ApiClient {
             );
 
           case DioExceptionType.badResponse:
-            return ApiError(
+            try {
+              return ApiError(
+                error: fromJsonError(
+                  e.response!.data,
+                  e.response!.statusCode!,
+                ),
+                code: e.response!.statusCode!,
+              );
+            } catch (error) {
+              return ApiError(
                 error: ApiErrorResponse.fromJson(
                   e.response!.data,
                   e.response!.statusCode!,
                 ),
-                code: e.response!.statusCode!);
+                code: e.response!.statusCode!,
+              );
+            }
+
           default:
             return UnknownError(error: e);
         }

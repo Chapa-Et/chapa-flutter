@@ -47,7 +47,10 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('My Shopping Cart'),
+        title: Text(
+          'My Shopping Cart',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         actions: [
           badge.Badge(
             badgeContent: Consumer<CartProvider>(
@@ -248,54 +251,64 @@ class _CartScreenState extends State<CartScreen> {
                 ],
               );
             },
-          )
-        ],
-      ),
-      bottomNavigationBar: InkWell(
-        onTap: () {
-          var r = Random();
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.012,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all<Color>(
+                    Theme.of(context).primaryColor),
+              ),
+              onPressed: () {
+                var r = Random();
 
-          const _chars =
-              'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-          String transactionRef =
-              List.generate(10, (index) => _chars[r.nextInt(_chars.length)])
-                  .join();
+                const _chars =
+                    'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+                String transactionRef = List.generate(
+                    10, (index) => _chars[r.nextInt(_chars.length)]).join();
 
-          ///
-          ///
-          ///
-          ///
-          Chapa.paymentParameters(
-              context: context, // context
-              publicKey: 'CHASECK-bQNSo2l4wDi3S8YDONvHD8d2D92IWQWF',
-              currency: 'etb',
-              amount: '10',
-              email: 'xyz@gmail.com',
-              phone: '0964001822',
-              firstName: 'Woynshet',
-              lastName: 'Bilihatu',
-              txRef: transactionRef,
-              title: 'Test Payment',
-              desc: 'Text Paymentd',
-              defaultCheckout: false,
-              nativeCheckout: true,
-              namedRouteFallBack: '/checkoutPage',
-              encryptionKey: "YgBWLO56ArTemxtvdij6RKqw"
-              // fall back route name
-              );
-        },
-        child: Container(
-          color: Colors.yellow.shade600,
-          alignment: Alignment.center,
-          height: 50.0,
-          child: const Text(
-            'Proceed to Pay',
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
+                ///
+                ///
+                ///
+                ///
+                Chapa.paymentParameters(
+                    context: context, // context
+                    publicKey: 'CHAPUBK-dsUgHMc7yPc8hwmSP98BUYNZ0dBGJ5nW',
+                    currency: 'ETB',
+                    amount: '1',
+                    email: 'xyz@gmail.com',
+                    phone: '0964001822',
+                    firstName: 'Woynshet',
+                    lastName: 'Bilihatu',
+                    txRef: transactionRef,
+                    title: 'Test Payment',
+                    desc: 'Text Paymentd',
+                    nativeCheckout: true,
+                    namedRouteFallBack: '/checkoutPage',
+                    showPaymentMethodsOnGridView: true,
+                    availablePaymentMethods: [
+                      'telebirr',
+                      'ebirr',
+                      'mpesa',
+                      'cbebirr'
+                    ]
+                    // fall back route name
+                    );
+              },
+              child: Text(
+                'Proceed to Pay',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ),
           ),
-        ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.04,
+          )
+        ],
       ),
     );
   }

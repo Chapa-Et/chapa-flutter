@@ -1,12 +1,11 @@
-import 'dart:async';
-
 import 'package:bloc/bloc.dart';
-import 'package:chapasdk/constants/direct_charge_success_response.dart';
-import 'package:chapasdk/constants/enums.dart';
+import 'package:chapasdk/data/model/initiate_payment.dart';
+import 'package:chapasdk/data/model/response/direct_charge_success_response.dart';
 import 'package:chapasdk/data/model/network_response.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
 import 'package:chapasdk/data/model/request/validate_directCharge_request.dart';
 import 'package:chapasdk/data/model/response/api_error_response.dart';
+import 'package:chapasdk/data/model/response/verify_direct_charge_response.dart';
 import 'package:chapasdk/data/services/payment_service.dart';
 import 'package:meta/meta.dart';
 
@@ -26,30 +25,38 @@ class ChapaNativeCheckoutBloc
       try {
         NetworkResponse networkResponse =
             await paymentService.initializeDirectPayment(
-                request: event.directChargeRequest,
-                publicKey: event.publicKey,
-                localPaymentMethods: event.selectedLocalPaymentMethods);
-        
+          request: event.directChargeRequest,
+          publicKey: event.publicKey,
+        );
+
         if (networkResponse is Success) {
           DirectChargeSuccessResponse directChargeSuccessResponse =
               networkResponse.body;
-          if (directChargeSuccessResponse.data?.authDataType ==
-              VerificationType.ussd) {
+          String reference =
+              directChargeSuccessResponse.data!.meta!.refId ?? "";
+
+          if (reference.isNotEmpty) {
             add(ValidatePayment(
               validateDirectChargeRequest: ValidateDirectChargeRequest(
-                client: "",
-                referenceId: event.directChargeRequest.txRef,
-              ),
+                  reference: reference,
+                  mobile: event.directChargeRequest.mobile,
+                  paymentMethod: event.directChargeRequest.paymentMethod),
               publicKey: event.publicKey,
-              selectedLocalPaymentMethods: event.selectedLocalPaymentMethods,
             ));
-          } else {
-            emit(ChapaNativeCheckoutPaymentInitateSuccessOTPRequestState(
-                directChargeSuccessResponse: directChargeSuccessResponse));
           }
         } else if (networkResponse is ApiError) {
-          emit(ChapaNativeCheckoutApiError(
-              apiErrorResponse: networkResponse.error));
+          try {
+            DirectChargeApiError directChargeApiError = networkResponse.error;
+            emit(ChapaNativeCheckoutPaymentInitiateApiError(
+              directChargeApiError: directChargeApiError,
+            ));
+          } catch (e) {
+            ApiErrorResponse apiErrorResponse = networkResponse.error;
+
+            emit(ChapaNativeCheckoutPaymentInitiateApiError(
+              apiErrorResponse: apiErrorResponse,
+            ));
+          }
         } else if (networkResponse is NetworkError) {
           emit(ChapaNativeCheckoutNetworkError());
         } else if (networkResponse is UnknownError) {
@@ -63,38 +70,39 @@ class ChapaNativeCheckoutBloc
     });
     on<ValidatePayment>((event, emit) async {
       emit(ChapaNativeCheckoutValidationOngoingState());
-      const interval = Duration(seconds: 3);
-      const totalDuration = Duration(minutes: 5);
-      Timer.periodic(interval, (Timer t) async {
-        if (t.tick >= totalDuration.inSeconds ~/ interval.inSeconds) {
-          t.cancel();
-          emit(ChapaNativeCheckoutTimeout());
-        } else {
-          try {
-            NetworkResponse networkResponse =
-                await paymentService.validatePayment(
-              body: event.validateDirectChargeRequest,
+      try {
+        NetworkResponse networkResponse = await paymentService.verifyPayment(
+          body: event.validateDirectChargeRequest,
+          publicKey: event.publicKey,
+        );
+        if (networkResponse is Success) {
+          ValidateDirectChargeResponse verifyResult = networkResponse.body;
+          if (verifyResult.data?.status == "success") {
+            emit(ChapaNativeCheckoutPaymentValidateSuccessState(
+              directChargeValidateResponse: networkResponse.body,
+              isPaymentFailed: false,
+            ));
+          } else if (verifyResult.data?.status == "pending") {
+            add(ValidatePayment(
+              validateDirectChargeRequest: event.validateDirectChargeRequest,
               publicKey: event.publicKey,
-              localPaymentMethods: event.selectedLocalPaymentMethods,
-            );
-            if (networkResponse is Success) {
-            } else if (networkResponse is ApiError) {
-              emit(ChapaNativeCheckoutApiError(
-                  apiErrorResponse: networkResponse.error));
-              t.cancel();
-            } else if (networkResponse is NetworkError) {
-              t.cancel();
-              emit(ChapaNativeCheckoutNetworkError());
-            } else {
-              t.cancel();
-              emit(ChapaNativeCheckoutNetworkError());
-            }
-          } catch (e) {
-            t.cancel();
-            emit(ChapaNativeCheckoutNetworkError());
+            ));
+          } else {
+            emit(ChapaNativeCheckoutPaymentValidateSuccessState(
+                directChargeValidateResponse: networkResponse.body,
+                isPaymentFailed: true));
           }
+        } else if (networkResponse is ApiError) {
+          emit(ChapaNativeCheckoutPaymentValidateApiError(
+              apiErrorResponse: networkResponse.error));
+        } else if (networkResponse is NetworkError) {
+          emit(ChapaNativeCheckoutNetworkError());
+        } else {
+          emit(ChapaNativeCheckoutNetworkError());
         }
-      });
+      } catch (e) {
+        emit(ChapaNativeCheckoutNetworkError());
+      }
     });
   }
 }

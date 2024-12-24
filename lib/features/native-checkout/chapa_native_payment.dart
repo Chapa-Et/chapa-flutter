@@ -1,16 +1,20 @@
 import 'dart:async';
 import 'dart:ui';
-import 'package:chapasdk/constants/enums.dart';
-import 'package:chapasdk/constants/extentions.dart';
-import 'package:chapasdk/constants/requests.dart';
-import 'package:chapasdk/custom_button.dart';
+import 'package:chapasdk/domain/constants/app_colors.dart';
+import 'package:chapasdk/domain/constants/app_images.dart';
+import 'package:chapasdk/domain/constants/enums.dart';
+import 'package:chapasdk/domain/constants/extentions.dart';
+import 'package:chapasdk/domain/constants/requests.dart';
+import 'package:chapasdk/domain/custom-widget/custom_button.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
 import 'package:chapasdk/data/services/payment_service.dart';
 import 'package:chapasdk/domain/custom-widget/custom_textform.dart';
+import 'package:chapasdk/domain/custom-widget/no_connection.dart';
 import 'package:chapasdk/features/native-checkout/bloc/chapa_native_checkout_bloc.dart';
-import 'package:chapasdk/features/network/bloc/network_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
+// ignore: must_be_immutable
 class ChapaNativePayment extends StatefulWidget {
   final BuildContext context;
   final String publicKey;
@@ -24,25 +28,37 @@ class ChapaNativePayment extends StatefulWidget {
   final String title;
   final String desc;
   final String namedRouteFallBack;
-  final bool defaultCheckout;
-  final String encryptionKey;
+  final Widget? child;
+  final Color? buttonColor;
+  final Color? labelTextColor;
+  final bool? showPaymentMethodsOnGridView;
+  List<String> availablePaymentMethods;
 
-  const ChapaNativePayment(
-      {super.key,
-      required this.context,
-      required this.publicKey,
-      required this.email,
-      required this.phone,
-      required this.amount,
-      required this.firstName,
-      required this.lastName,
-      required this.txRef,
-      required this.title,
-      required this.desc,
-      required this.namedRouteFallBack,
-      required this.currency,
-      this.defaultCheckout = false,
-      required this.encryptionKey});
+  ChapaNativePayment({
+    super.key,
+    required this.context,
+    required this.publicKey,
+    required this.email,
+    required this.phone,
+    required this.amount,
+    required this.firstName,
+    required this.lastName,
+    required this.txRef,
+    required this.title,
+    required this.desc,
+    required this.namedRouteFallBack,
+    required this.currency,
+    this.child,
+    this.buttonColor,
+    this.labelTextColor,
+    this.showPaymentMethodsOnGridView,
+    this.availablePaymentMethods = const [
+      "telebirr",
+      "cbebirr",
+      "ebirr",
+      "mpesa",
+    ],
+  });
 
   @override
   State<ChapaNativePayment> createState() => _ChapaNativePaymentState();
@@ -50,330 +66,762 @@ class ChapaNativePayment extends StatefulWidget {
 
 class _ChapaNativePaymentState extends State<ChapaNativePayment> {
   PaymentService paymentService = PaymentService();
-  LocalPaymentMethods selectedLocalPaymentMethods =
-      LocalPaymentMethods.telebirr;
+  LocalPaymentMethods? selectedLocalPaymentMethods;
 
   late ChapaNativeCheckoutBloc _chapaNativeCheckoutBloc;
-  late NetworkBloc _networkBloc;
+
   bool _isDialogShowing = false;
-  int _start = 300;
-  int _currentSeconds = 300;
-  Timer? _timer;
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController phoneNumberController = TextEditingController();
+  List<LocalPaymentMethods> paymentMethods = [];
+  bool showPaymentMethodError = false;
+
   @override
   void initState() {
+    phoneNumberController = TextEditingController(
+      text: widget.phone,
+    );
+
     _chapaNativeCheckoutBloc =
         ChapaNativeCheckoutBloc(paymentService: PaymentService());
-    _networkBloc = NetworkBloc();
+
+    setState(() {
+      if (widget.availablePaymentMethods.isNotEmpty) {
+        paymentMethods = getFilteredPaymentMethods(
+          widget.availablePaymentMethods,
+        );
+      } else {
+        paymentMethods = LocalPaymentMethods.values;
+      }
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
     _chapaNativeCheckoutBloc.close();
-    _timer?.cancel();
+    phoneNumberController.dispose();
     super.dispose();
   }
 
-  void startTimer() {
-    const oneSec = Duration(seconds: 1);
-    _timer = Timer.periodic(
-      oneSec,
-      (Timer timer) {
-        setState(() {
-          if (_currentSeconds < 5) {
-            timer.cancel();
-          } else {
-            _currentSeconds = _start - timer.tick;
-          }
-        });
+  exitPaymentPage(String message) {
+    Navigator.pushReplacementNamed(
+      context,
+      widget.namedRouteFallBack,
+      arguments: {
+        'message': message,
+        'transactionReference': widget.txRef,
+        'paidAmount': widget.amount
       },
     );
   }
 
-  String get timerText {
-    Duration duration = Duration(seconds: _currentSeconds);
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String minutes = twoDigits(duration.inMinutes.remainder(60));
-    String seconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$minutes:$seconds";
+  Future<void> _showProcessingDialog() async {
+    if (_isDialogShowing) return;
+    setState(() => _isDialogShowing = true);
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Dialog(
+        child: Padding(
+          padding: EdgeInsets.all(32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Processing Payment'),
+              SizedBox(height: 12),
+              Text('Please wait while we process your payment.'),
+              SizedBox(height: 12),
+              SizedBox(
+                width: 15,
+                height: 15,
+                child: CircularProgressIndicator(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
-  Future<void> showCustomDialog() async {
-    if (!_isDialogShowing) {
-      setState(() {
-        _isDialogShowing = true;
-        _currentSeconds = _start;
-      });
-      startTimer();
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return StatefulBuilder(builder: (context, setState) {
-            return Dialog(
-              child: Padding(
-                padding: EdgeInsets.all(32),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Processing Payment',
-                    ),
-                    SizedBox(
-                      height: 12,
-                    ),
-                    Text(
-                      'Please wait while we process your payment.',
-                    ),
-                    CountDownTimer(
-                      duration: Duration(seconds: _currentSeconds),
-                      onFinish: () {
-                        Navigator.pop(context); // Close dialog when timer ends
-                      },
-                    ),
-                    CustomButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        Navigator.pop(context);
-                      },
-                      title: "Return",
-                    )
-                  ],
-                ),
-              ),
-            );
-          });
-        },
-      );
+  _hideDialog() {
+    if (_isDialogShowing) {
+      Navigator.of(context, rootNavigator: true).pop();
+      setState(() => _isDialogShowing = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     Size deviceSize = MediaQuery.of(context).size;
-    TextEditingController phoneNumberController = TextEditingController();
 
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: true,
         title: Text(
-          "Chapa Checkout",
-          style: TextStyle(),
+          "Checkout",
+          style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
       body: StreamBuilder<ChapaNativeCheckoutState>(
-          stream: _chapaNativeCheckoutBloc.stream,
-          initialData: ChapaNativeCheckoutInitial(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              final state = snapshot.data;
-              if (state is ChapaNativeCheckoutInitial ||
-                  state is ChapaNativeCheckoutValidationOngoingState) {
-                if (state is ChapaNativeCheckoutValidationOngoingState) {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    showCustomDialog();
-                  });
-                }
-                return Padding(
-                  padding:
-                      EdgeInsets.symmetric(horizontal: deviceSize.width * 0.04),
-                  child: ImageFiltered(
-                    imageFilter: ImageFilter.blur(
-                      sigmaX: state is ChapaNativeCheckoutValidationOngoingState
-                          ? 5.0
-                          : 0,
-                      sigmaY: state is ChapaNativeCheckoutValidationOngoingState
-                          ? 5.0
-                          : 0,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Select Payment Methods",
-                          style: TextStyle(
-                            color:
-                                Theme.of(context).textTheme.bodyMedium!.color,
-                          ),
-                        ),
-                        DropdownButtonFormField(
-                            value: selectedLocalPaymentMethods,
-                            items: LocalPaymentMethods.values
-                                .map((e) => DropdownMenuItem(
-                                      value: e,
-                                      child: Text(e.displayName()),
-                                    ))
-                                .toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() {
-                                  selectedLocalPaymentMethods = val;
-                                });
-                              }
-                            }),
-                        SizedBox(
-                          height: deviceSize.height * 0.04,
-                        ),
-                        Text(
-                          "Phone number",
-                          style: TextStyle(),
-                        ),
-                        SizedBox(
-                          height: deviceSize.height * 0.02,
-                        ),
-                        CustomTextForm(
-                          controller: phoneNumberController,
-                          hintText: "964------",
-                          hintTextStyle: TextStyle(color: Colors.grey),
-                          lableText: "",
-                          filled: false,
-                          filledColor: Colors.transparent,
-                          obscureText: false,
-                          onTap: () {},
-                          validator: (val) {
-                            if (val == null || val.isEmpty) {
-                              return "Phone number can not be empty";
-                            }
-                            return null;
-                          },
-                          onChanged: (val) {},
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            intilizeMyPayment(
-                              widget.context,
-                              widget.publicKey,
-                              widget.email,
-                              widget.phone,
-                              widget.amount,
-                              widget.currency,
-                              widget.firstName,
-                              widget.lastName,
-                              widget.txRef,
-                              widget.title,
-                              widget.desc,
-                              widget.namedRouteFallBack,
-                            );
-                          },
-                          child: Text(
-                            "Pay with webview",
-                            style: TextStyle(),
-                          ),
-                        ),
-                        Spacer(),
-                        CustomButton(
-                          title: "Pay",
-                          onPressed: () async {
-                            DirectChargeRequest request = DirectChargeRequest(
-                                amount: widget.amount,
-                                mobile: phoneNumberController.text,
-                                currency: widget.currency,
-                                firstName: widget.firstName,
-                                lastName: widget.lastName,
-                                email: widget.email,
-                                txRef: widget.txRef);
-                            _chapaNativeCheckoutBloc.add(InitiatePayment(
-                                directChargeRequest: request,
-                                publicKey: widget.publicKey,
-                                selectedLocalPaymentMethods:
-                                    selectedLocalPaymentMethods));
-                          },
-                        ),
-                        SizedBox(
-                          height: deviceSize.height * 0.04,
-                        )
-                      ],
-                    ),
+        stream: _chapaNativeCheckoutBloc.stream,
+        initialData: ChapaNativeCheckoutInitial(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final state = snapshot.data;
+            return _buildStreamState(state, deviceSize);
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildStreamState(ChapaNativeCheckoutState? state, Size deviceSize) {
+    if (state is ChapaNativeCheckoutLoadingState) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (state is ChapaNativeCheckoutValidationOngoingState) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _showProcessingDialog(),
+      );
+    }
+    if (state is ChapaNativeCheckoutPaymentValidateSuccessState) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _hideDialog(),
+      );
+      return _buildPaymentValidateSuccessResult(state, deviceSize);
+    }
+
+    if (state is ChapaNativeCheckoutPaymentInitiateApiError) {
+      return _buildPaymentInitiateError(state, deviceSize);
+    }
+    if (state is ChapaNativeCheckoutPaymentValidateApiError) {
+      return _buildPaymentValidateError(state);
+    }
+    if (state is ChapaNativeCheckoutNetworkError) {
+      return NoConnection();
+    }
+
+    return _buildPaymentForm(state, deviceSize);
+  }
+
+  Widget _buildPaymentForm(ChapaNativeCheckoutState? state, Size deviceSize) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: deviceSize.width * 0.064),
+      child: ImageFiltered(
+        imageFilter: ImageFilter.blur(
+          sigmaX: state is ChapaNativeCheckoutValidationOngoingState ? 5.0 : 0,
+          sigmaY: state is ChapaNativeCheckoutValidationOngoingState ? 5.0 : 0,
+        ),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              widget.child ?? Container(),
+              Text(
+                "Payment Method",
+                style: Theme.of(context).textTheme.labelMedium,
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.012,
+              ),
+              Flexible(
+                child: PaymentMethodsCustomBuilderView(
+                  showPaymentMethodsOnGridView:
+                      widget.showPaymentMethodsOnGridView,
+                  availablePaymentMethods: paymentMethods,
+                  onPressed: (val) {
+                    setState(() {
+                      selectedLocalPaymentMethods = val;
+                      showPaymentMethodError = false;
+                    });
+                  },
+                  selectedPaymentMethod: selectedLocalPaymentMethods,
+                ),
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.012,
+              ),
+              Visibility(
+                visible: showPaymentMethodError,
+                child: Text(
+                  "Please Select Payment Method",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.red),
+                ),
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.004,
+              ),
+              Text(
+                "Phone Number",
+                style: Theme.of(context).textTheme.labelLarge,
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.006,
+              ),
+              CustomTextForm(
+                prefix: Padding(
+                  padding: const EdgeInsets.only(left: 20.0, right: 12),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Image.asset(
+                        AppImages.ethiopiaLogo,
+                        width: deviceSize.width * 0.064,
+                      ),
+                      const SizedBox(
+                        width: 4,
+                      ),
+                    ],
                   ),
-                );
-              } else if (state
-                  is ChapaNativeCheckoutPaymentInitateSuccessState) {
-                return const Center(
+                ),
+                textStyle: Theme.of(context).textTheme.bodyMedium,
+                controller: phoneNumberController,
+                hintText: "0911121314",
+                keyboardType: TextInputType.number,
+                inputFormatter: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10)
+                ],
+                hintTextStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: const Color.fromARGB(255, 156, 145, 145),
+                    ),
+                labelText: "",
+                filled: false,
+                filledColor: Colors.transparent,
+                obscureText: false,
+                onTap: () {},
+                validator: (val) {
+                  if (val == null || val.isEmpty) {
+                    return "Phone number can not be empty";
+                  }
+                  return null;
+                },
+                onChanged: (val) {},
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: () async {
+                    await initializeMyPayment(
+                      widget.context,
+                      widget.email,
+                      widget.phone,
+                      widget.amount,
+                      widget.currency,
+                      widget.firstName,
+                      widget.lastName,
+                      widget.txRef,
+                      widget.title,
+                      widget.desc,
+                      widget.namedRouteFallBack,
+                      widget.publicKey,
+                    );
+                  },
                   child: Text(
-                    "Success State here",
-                    style: TextStyle(
-                      fontSize: 24.0,
+                    "Pay with Chapa",
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          decoration: TextDecoration.underline,
+                          decorationColor: AppColors.chapaPrimaryColor,
+                          color: AppColors.chapaPrimaryColor,
+                        ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.064,
+              ),
+              CustomButton(
+                title: "Pay ${widget.amount} ${widget.currency.toUpperCase()}",
+                backgroundColor: widget.buttonColor,
+                onPressed: () async {
+                  if (_formKey.currentState!.validate() &&
+                      selectedLocalPaymentMethods != null) {
+                    DirectChargeRequest request = DirectChargeRequest(
+                      amount: widget.amount,
+                      mobile: phoneNumberController.text,
+                      currency: widget.currency,
+                      firstName: widget.firstName,
+                      lastName: widget.lastName,
+                      email: widget.email,
+                      txRef: widget.txRef,
+                      paymentMethod: selectedLocalPaymentMethods!.value(),
+                    );
+                    _chapaNativeCheckoutBloc.add(InitiatePayment(
+                      directChargeRequest: request,
+                      publicKey: widget.publicKey,
+                    ));
+                  }
+                  if (selectedLocalPaymentMethods == null) {
+                    setState(() {
+                      showPaymentMethodError = true;
+                    });
+                  }
+                },
+              ),
+              SizedBox(
+                height: deviceSize.height * 0.048,
+              ),
+              Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPaymentValidateSuccessResult(
+      ChapaNativeCheckoutPaymentValidateSuccessState state, Size deviceSize) {
+    if (state.isPaymentFailed) {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: deviceSize.width * 0.08,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: deviceSize.height * 0.064,
+            ),
+            CircleAvatar(
+              backgroundColor: Colors.red,
+              radius: deviceSize.height * 0.028,
+              child: Icon(
+                Icons.close,
+                color: Theme.of(context).scaffoldBackgroundColor,
+              ),
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.016,
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                "Payment Failed",
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: Colors.red,
+                      fontWeight: FontWeight.w500,
                     ),
+              ),
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.012,
+            ),
+            Text(
+              "Payment is failed. Please try again. \n The transaction is canceled or third party time is out.",
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.04,
+            ),
+            CustomButton(
+              backgroundColor:
+                  widget.buttonColor ?? Theme.of(context).primaryColor,
+              onPressed: () {
+                Navigator.pop(context);
+                exitPaymentPage(state.directChargeValidateResponse.message ??
+                    "Payment is Failed");
+              },
+              title: "Retry Again",
+            )
+          ],
+        ),
+      );
+    } else {
+      return Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: deviceSize.width * 0.04,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              height: deviceSize.height * 0.054,
+            ),
+            Image.asset(
+              AppImages.successIcon,
+              width: deviceSize.width * 0.2,
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.012,
+            ),
+            Text(
+              "${state.directChargeValidateResponse.data!.amount?.formattedBirr()}",
+              style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
-                );
-              } else if (state is ChapaNativeCheckoutLoadingState) {
-                return Center(child: CircularProgressIndicator());
-              } else if (state is ChapaNativeCheckoutApiError) {
-                setState(() {
-                  _isDialogShowing = true;
-                });
-                return Center(
-                  child: Text(state.apiErrorResponse.message ?? ""),
-                );
-              } else {
-                return Container(
-                  child: Text(
-                    "Something went wrong please contact us",
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 60),
+              child: Divider(),
+            ),
+            Align(
+              alignment: Alignment.center,
+              child: Text(
+                state.directChargeValidateResponse.message ?? "Successful",
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.chapaPrimaryColor),
+              ),
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.012,
+            ),
+            Row(
+              children: [
+                Text(
+                  "Order ID",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Spacer(),
+                Text(
+                  state.directChargeValidateResponse.processorId ?? "",
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ],
+            ),
+            Divider(),
+            Row(
+              children: [
+                Text(
+                  "Amount: ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Spacer(),
+                Text(
+                  state.directChargeValidateResponse.data?.amount
+                          ?.formattedBirr() ??
+                      "",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              children: [
+                Text(
+                  "Charge: ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Spacer(),
+                Text(
+                  state.directChargeValidateResponse.data?.charge
+                          ?.formattedBirr() ??
+                      "",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              children: [
+                Text(
+                  "Reference ID: ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Spacer(),
+                Text(
+                  state.directChargeValidateResponse.trxRef ?? "",
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              ],
+            ),
+            Divider(),
+            Row(
+              children: [
+                Text(
+                  "Paid At: ",
+                  style: Theme.of(context)
+                      .textTheme
+                      .labelSmall!
+                      .copyWith(color: Colors.grey),
+                ),
+                Spacer(),
+                Text(
+                  state.directChargeValidateResponse
+                      .getCreatedAtTime()
+                      .format(),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                )
+              ],
+            ),
+            Divider(),
+            SizedBox(
+              height: deviceSize.height * 0.048,
+            ),
+            SizedBox(
+              width: deviceSize.width * 0.72,
+              child: CustomButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  exitPaymentPage('paymentSuccessful');
+                },
+                title: "Finish",
+              ),
+            ),
+            Spacer(),
+            Image.asset(
+              AppImages.chapaFullLogo,
+              width: deviceSize.width * 0.28,
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.008,
+            ),
+            Text(
+              "Thank you for using chapa",
+              style: Theme.of(context)
+                  .textTheme
+                  .labelMedium!
+                  .copyWith(color: Colors.grey, fontWeight: FontWeight.w400),
+            ),
+            SizedBox(
+              height: deviceSize.height * 0.048,
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildPaymentInitiateError(
+      ChapaNativeCheckoutPaymentInitiateApiError? state, Size deviceSize) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: deviceSize.width * 0.08),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: deviceSize.height * 0.064,
+          ),
+          CircleAvatar(
+            backgroundColor: Colors.red,
+            radius: deviceSize.height * 0.028,
+            child: Icon(
+              Icons.close,
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.016,
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              state?.directChargeApiError?.paymentStatus ?? "Payment Failed",
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w500,
                   ),
-                );
-              }
-            } else {
-              return Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          }),
+            ),
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.012,
+          ),
+          Text(
+            state?.directChargeApiError?.data?.message ??
+                "Something went wrong",
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.04,
+          ),
+          CustomButton(
+            backgroundColor:
+                widget.buttonColor ?? Theme.of(context).primaryColor,
+            onPressed: () {
+              Navigator.pop(context);
+              exitPaymentPage(
+                  state?.directChargeApiError?.message ?? "Payment is Failed");
+            },
+            title: "Retry Again",
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentValidateError(
+      ChapaNativeCheckoutPaymentValidateApiError state) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(state.apiErrorResponse?.status ?? "Error occurred"),
+          const SizedBox(height: 8),
+          Text(state.apiErrorResponse?.message ?? "Something went wrong"),
+        ],
+      ),
     );
   }
 }
 
-class CountDownTimer extends StatefulWidget {
-  final Duration duration;
-  final Function onFinish;
-
-  const CountDownTimer({
-    Key? key,
-    required this.duration,
-    required this.onFinish,
-  }) : super(key: key);
+// ignore: must_be_immutable
+class PaymentMethodsCustomBuilderView extends StatefulWidget {
+  final bool? showPaymentMethodsOnGridView;
+  final List<LocalPaymentMethods> availablePaymentMethods;
+  LocalPaymentMethods? selectedPaymentMethod;
+  Function(LocalPaymentMethods) onPressed;
+  PaymentMethodsCustomBuilderView({
+    super.key,
+    required this.showPaymentMethodsOnGridView,
+    required this.availablePaymentMethods,
+    required this.onPressed,
+    required this.selectedPaymentMethod,
+  });
 
   @override
-  _CountDownTimerState createState() => _CountDownTimerState();
+  State<PaymentMethodsCustomBuilderView> createState() =>
+      _PaymentMethodsCustomBuilderViewState();
 }
 
-class _CountDownTimerState extends State<CountDownTimer> {
-  late Duration _currentTime;
-
-  @override
-  void initState() {
-    _currentTime = widget.duration;
-    startTimer();
-    super.initState();
-  }
-
-  void startTimer() {
-    Timer.periodic(Duration(seconds: 1), (timer) {
-      setState(() {
-        if (_currentTime.inSeconds <= 0) {
-          timer.cancel();
-          widget.onFinish();
-        } else {
-          _currentTime = _currentTime -
-              Duration(
-                seconds: 1,
-              );
-        }
-      });
-    });
-  }
-
+class _PaymentMethodsCustomBuilderViewState
+    extends State<PaymentMethodsCustomBuilderView> {
   @override
   Widget build(BuildContext context) {
-    String twoDigits(int n) => n.toString().padLeft(2, "0");
-    String minutes = twoDigits(_currentTime.inMinutes.remainder(60));
-    String seconds = twoDigits(_currentTime.inSeconds.remainder(60));
-    return Text(
-      '$minutes:$seconds',
-      style: TextStyle(
-        color: Theme.of(context).primaryColor,
-        fontSize: 18,
-        fontWeight: FontWeight.bold,
+    Size deviceSize = MediaQuery.of(context).size;
+    return widget.showPaymentMethodsOnGridView ?? true
+        ? Container(
+            color: AppColors.shadowColor,
+            // padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+            child: GridView.count(
+              physics: NeverScrollableScrollPhysics(),
+              scrollDirection: Axis.vertical,
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              childAspectRatio: 1,
+              crossAxisSpacing: deviceSize.width * 0.02,
+              children: widget.availablePaymentMethods
+                  .map((method) => InkWell(
+                        onTap: () {
+                          widget.onPressed(method);
+                        },
+                        child: paymentMethodItem(method, deviceSize,
+                            method == widget.selectedPaymentMethod),
+                      ))
+                  .toList(),
+            ),
+          )
+        : Container(
+            color: AppColors.shadowColor,
+            padding: EdgeInsets.symmetric(
+              horizontal: 8,
+            ),
+            height: deviceSize.height * 0.132,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.availablePaymentMethods.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                final paymentMethod = widget.availablePaymentMethods[index];
+                return InkWell(
+                  onTap: () {
+                    widget.onPressed(paymentMethod);
+                  },
+                  child: paymentMethodItem(paymentMethod, deviceSize,
+                      paymentMethod == widget.selectedPaymentMethod),
+                );
+              },
+            ),
+          );
+  }
+
+  Widget paymentMethodItem(
+      LocalPaymentMethods paymentMethod, Size deviceSize, bool isSelected) {
+    return Container(
+      margin: const EdgeInsets.only(right: 6, bottom: 6, top: 6, left: 6),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: deviceSize.width * 0.24,
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            decoration: BoxDecoration(
+              border: Border.all(
+                color: isSelected ? Colors.green : Colors.transparent,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              color: Theme.of(context).scaffoldBackgroundColor,
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).shadowColor.withOpacity(0.05),
+                  blurRadius: 2,
+                  spreadRadius: 2.0,
+                  offset: Offset(0, 4), // Controls the position of the shadow
+                ),
+              ],
+            ),
+            child: Stack(
+              // crossAxisAlignment: CrossAxisAlignment.end,
+              // mainAxisAlignment: MainAxisAlignment.start,
+              // mainAxisSize: MainAxisSize.min,
+              children: [
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: CircleAvatar(
+                    radius: 6,
+                    backgroundColor: isSelected
+                        ? Color(0xff7DC400)
+                        : Theme.of(context).scaffoldBackgroundColor,
+                    child: Icon(
+                      Icons.done,
+                      size: 8,
+                      color: isSelected
+                          ? Colors.black
+                          : Theme.of(context).scaffoldBackgroundColor,
+                    ),
+                  ),
+                ),
+                Container(
+                  margin: EdgeInsets.only(
+                    top: 6,
+                  ),
+                  width: deviceSize.width * 0.2,
+                  height: deviceSize.width * 0.08,
+                  child: Image.asset(
+                    paymentMethod.iconPath(),
+                    fit: BoxFit.contain,
+                  ),
+                )
+              ],
+            ),
+          ),
+          SizedBox(
+            height: 8,
+          ),
+          Text(
+            paymentMethod.displayName(),
+            style: Theme.of(context).textTheme.labelSmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

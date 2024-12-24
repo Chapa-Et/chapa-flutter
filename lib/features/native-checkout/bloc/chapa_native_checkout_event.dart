@@ -7,12 +7,11 @@ sealed class ChapaNativeCheckoutEvent {}
 class InitiatePayment extends ChapaNativeCheckoutEvent {
   DirectChargeRequest directChargeRequest;
   String publicKey;
-  LocalPaymentMethods selectedLocalPaymentMethods;
 
   InitiatePayment({
     required this.directChargeRequest,
     required this.publicKey,
-    required this.selectedLocalPaymentMethods,
+
   });
 }
 
@@ -20,10 +19,10 @@ class InitiatePayment extends ChapaNativeCheckoutEvent {
 class ValidatePayment extends ChapaNativeCheckoutEvent {
   ValidateDirectChargeRequest validateDirectChargeRequest;
   String publicKey;
-  LocalPaymentMethods selectedLocalPaymentMethods;
+
   ValidatePayment({
     required this.validateDirectChargeRequest,
     required this.publicKey,
-    required this.selectedLocalPaymentMethods,
+
   });
 }

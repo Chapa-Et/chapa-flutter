@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:chapasdk/constants/url.dart';
+import 'package:chapasdk/domain/constants/url.dart';
 import 'package:chapasdk/data/dio_interceptors.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
@@ -25,7 +25,7 @@ class DioClient {
 
     _dio
       ..options = BaseOptions(
-        baseUrl: ChapaUrl.baseURL,
+        baseUrl: ChapaUrl.directChargeBaseUrl,
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         followRedirects: false,

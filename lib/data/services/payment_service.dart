@@ -1,8 +1,7 @@
-import 'package:chapasdk/constants/direct_charge_success_response.dart';
-import 'package:chapasdk/constants/enums.dart';
-import 'package:chapasdk/constants/extentions.dart';
-import 'package:chapasdk/constants/initiate_payment.dart';
-import 'package:chapasdk/constants/url.dart';
+import 'package:chapasdk/data/model/initiate_payment.dart';
+import 'package:chapasdk/data/model/response/direct_charge_success_response.dart';
+import 'package:chapasdk/domain/constants/enums.dart';
+import 'package:chapasdk/domain/constants/url.dart';
 import 'package:chapasdk/data/api_client.dart';
 import 'package:chapasdk/data/model/network_response.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
@@ -17,35 +16,26 @@ class PaymentService {
   Future<NetworkResponse> initializeDirectPayment({
     required DirectChargeRequest request,
     required String publicKey,
-    required LocalPaymentMethods localPaymentMethods,
   }) async {
     return apiClient.request(
       requestType: RequestType.post,
-      path: ChapaUrl.initiateDirectCharge,
+      path: ChapaUrl.directCharge,
       requiresAuth: true,
       data: request.toJson(),
-      queryParameters: {
-        'type': localPaymentMethods.value(),
-      },
       fromJsonSuccess: DirectChargeSuccessResponse.fromJson,
       fromJsonError: DirectChargeApiError.fromJson,
       publicKey: publicKey,
     );
   }
 
-  Future validatePayment({
-    required ValidateDirectChargeRequest body,
-    required String publicKey,
-    required LocalPaymentMethods localPaymentMethods,
-  }) async {
+  Future verifyPayment(
+      {required ValidateDirectChargeRequest body,
+      required String publicKey}) async {
     return apiClient.request(
       requestType: RequestType.post,
-      path: ChapaUrl.validateDirectCharge,
-      data: body.toJson(),
       requiresAuth: true,
-      queryParameters: {
-        'type': localPaymentMethods.value(),
-      },
+      path: ChapaUrl.verifyUrl,
+      data: body.toJson(),
       fromJsonSuccess: ValidateDirectChargeResponse.fromJson,
       fromJsonError: ApiErrorResponse.fromJson,
       publicKey: publicKey,

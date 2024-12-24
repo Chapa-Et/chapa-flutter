@@ -6,6 +6,7 @@ class DirectChargeRequest {
   String email;
   String txRef;
   String mobile;
+  String paymentMethod;
   DirectChargeRequest({
     required this.mobile,
     required this.firstName,
@@ -14,6 +15,7 @@ class DirectChargeRequest {
     required this.currency,
     required this.email,
     required this.txRef,
+    required this.paymentMethod
   });
 
   Map<String, dynamic> toJson() {
@@ -25,6 +27,7 @@ class DirectChargeRequest {
       'first_name': firstName,
       'last_name': lastName,
       'email': email,
+      'payment_method':paymentMethod
     };
   }
 }

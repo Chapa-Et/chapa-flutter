@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'package:chapasdk/constants/strings.dart';
+import 'package:chapasdk/domain/constants/app_colors.dart';
+import 'package:chapasdk/domain/constants/strings.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'constants/common.dart';
+import 'package:chapasdk/domain/constants/common.dart';
 
 class ChapaWebView extends StatefulWidget {
   final String url;
@@ -16,6 +17,7 @@ class ChapaWebView extends StatefulWidget {
   //description
   //
 
+  // ignore: use_super_parameters
   const ChapaWebView(
       {Key? key,
       required this.url,
@@ -74,8 +76,8 @@ class _ChapaWebViewState extends State<ChapaWebView> {
     });
   }
 
-  void exitPaymentPage(String message) {
-    Navigator.pushNamed(
+  exitPaymentPage(String message) {
+    Navigator.pushReplacementNamed(
       context,
       widget.fallBackNamedUrl,
       arguments: {
@@ -95,7 +97,36 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.chapaSecondaryColor,
+          title: Text(
+            "Checkout",
+            style: Theme.of(context)
+                .textTheme
+                .titleMedium!
+                .copyWith(color: Colors.white),
+          ),
+          actions: [
+            TextButton.icon(
+              onPressed: () {
+                exitPaymentPage("paymentCancelled");
+              },
+              icon: Text(
+                "Cancel",
+                style: Theme.of(context)
+                    .textTheme
+                    .titleSmall!
+                    .copyWith(color: Colors.white),
+              ),
+              label: Icon(
+                Icons.close,
+                color: Colors.white,
+              ),
+            )
+          ],
+        ),
         body: Column(children: <Widget>[
           Expanded(
             child: InAppWebView(
@@ -112,7 +143,6 @@ class _ChapaWebViewState extends State<ChapaWebView> {
                     handlerName: "buttonState",
                     callback: (args) async {
                       webViewController = controller;
-
                       if (args[2][1] == 'CancelbuttonClicked') {
                         exitPaymentPage('paymentCancelled');
                       }
@@ -126,7 +156,8 @@ class _ChapaWebViewState extends State<ChapaWebView> {
                   exitPaymentPage('paymentSuccessful');
                 }
                 if (uri.toString().contains('checkout/payment-receipt/')) {
-                  await delay();
+                  // await delay();
+                  await Future.delayed(const Duration(seconds: 5));
                   exitPaymentPage('paymentSuccessful');
                 }
                 controller.addJavaScriptHandler(
@@ -135,6 +166,7 @@ class _ChapaWebViewState extends State<ChapaWebView> {
                       webViewController = controller;
                       if (args[2][1] == 'failed') {
                         await delay();
+
                         exitPaymentPage('paymentFailed');
                       }
                       if (args[2][1] == 'success') {

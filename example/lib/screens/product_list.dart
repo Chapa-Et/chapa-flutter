@@ -19,17 +19,23 @@ class _ProductListState extends State<ProductList> {
 
   List<Item> products = [
     Item(
-        name: 'Apple', unit: 'Kg', price: 20, image: 'assets/images/apple.png'),
+      name: 'Apple',
+      unit: 'Kg',
+      price: 20,
+      image: 'assets/images/apple.png',
+    ),
     Item(
-        name: 'Mango',
-        unit: 'Doz',
-        price: 30,
-        image: 'assets/images/mango.png'),
+      name: 'Mango',
+      unit: 'Doz',
+      price: 30,
+      image: 'assets/images/mango.png',
+    ),
     Item(
-        name: 'Banana',
-        unit: 'Doz',
-        price: 10,
-        image: 'assets/images/banana.png'),
+      name: 'Banana',
+      unit: 'Doz',
+      price: 10,
+      image: 'assets/images/banana.png',
+    ),
     Item(
         name: 'Grapes',
         unit: 'Kg',
@@ -46,17 +52,6 @@ class _ProductListState extends State<ProductList> {
         unit: 'Doz',
         price: 15,
         image: 'assets/images/orange.png'),
-    Item(name: 'Peach', unit: 'Pc', price: 8, image: 'assets/images/peach.png'),
-    Item(
-        name: 'Strawberry',
-        unit: 'Box',
-        price: 12,
-        image: 'assets/images/strawberry.png'),
-    Item(
-        name: 'Fruit Basket',
-        unit: 'Kg',
-        price: 55,
-        image: 'assets/images/fruitBasket.png'),
   ];
 
   //List<bool> clicked = List.generate(10, (index) => false, growable: true);
@@ -65,7 +60,7 @@ class _ProductListState extends State<ProductList> {
     final cart = Provider.of<CartProvider>(context);
     void saveData(int index) {
       dbHelper
-          .insert(
+          .addToCart(
         Cart(
           id: index,
           productId: index.toString(),
@@ -82,9 +77,8 @@ class _ProductListState extends State<ProductList> {
         cart.addCounter();
         print('Product Added to cart');
       }).onError((error, stackTrace) {
-        cart.addTotalPrice(products[index].price.toDouble());
-        cart.addCounter();
         print("Error here");
+        print(stackTrace);
         print(error.toString());
       });
     }
@@ -92,7 +86,10 @@ class _ProductListState extends State<ProductList> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Product List'),
+        title: Text(
+          'Product List',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         actions: [
           badge.Badge(
             badgeContent: Consumer<CartProvider>(
@@ -160,7 +157,8 @@ class _ProductListState extends State<ProductList> {
                                       text:
                                           '${products[index].name.toString()}\n',
                                       style: const TextStyle(
-                                          fontWeight: FontWeight.bold)),
+                                        fontWeight: FontWeight.bold,
+                                      )),
                                 ]),
                           ),
                           RichText(
@@ -198,8 +196,8 @@ class _ProductListState extends State<ProductList> {
                     ),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                       //   primary: Colors.blueGrey.shade900,
-                        ),
+                            //   primary: Colors.blueGrey.shade900,
+                            ),
                         onPressed: () {
                           saveData(index);
                         },

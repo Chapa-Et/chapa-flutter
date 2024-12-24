@@ -7,40 +7,50 @@ final class ChapaNativeCheckoutInitial extends ChapaNativeCheckoutState {}
 
 final class ChapaNativeCheckoutLoadingState extends ChapaNativeCheckoutState {}
 
-final class ChapaNativeCheckoutPaymentInitateSuccessState
+final class ChapaNativeCheckoutPaymentInitiateSuccessState
     extends ChapaNativeCheckoutState {
   final DirectChargeSuccessResponse directChargeSuccessResponse;
 
-  ChapaNativeCheckoutPaymentInitateSuccessState({
+  ChapaNativeCheckoutPaymentInitiateSuccessState({
     required this.directChargeSuccessResponse,
   });
 }
 
-final class ChapaNativeCheckoutPaymentInitateSuccessOTPRequestState
-    extends ChapaNativeCheckoutState {
-  final DirectChargeSuccessResponse directChargeSuccessResponse;
-
-  ChapaNativeCheckoutPaymentInitateSuccessOTPRequestState({
-    required this.directChargeSuccessResponse,
+// ignore: must_be_immutable
+final class ChapaNativeCheckoutPaymentInitiateApiError  extends ChapaNativeCheckoutState {
+  ApiErrorResponse? apiErrorResponse;
+  DirectChargeApiError? directChargeApiError;
+  ChapaNativeCheckoutPaymentInitiateApiError({
+    this.apiErrorResponse,
+    this.directChargeApiError,
   });
 }
+
+// Validating
 
 final class ChapaNativeCheckoutValidationOngoingState
     extends ChapaNativeCheckoutState {}
 
 final class ChapaNativeCheckoutPaymentValidateSuccessState
-    extends ChapaNativeCheckoutState {}
+    extends ChapaNativeCheckoutState {
+  final ValidateDirectChargeResponse directChargeValidateResponse;
+  final bool isPaymentFailed;
+  ChapaNativeCheckoutPaymentValidateSuccessState({
+    required this.directChargeValidateResponse,
+    required this.isPaymentFailed,
+  });
+}
 
 // ignore: must_be_immutable
-final class ChapaNativeCheckoutApiError extends ChapaNativeCheckoutState {
-  ApiErrorResponse apiErrorResponse;
-  ChapaNativeCheckoutApiError({
-    required this.apiErrorResponse,
+final class ChapaNativeCheckoutPaymentValidateApiError
+    extends ChapaNativeCheckoutState {
+  ApiErrorResponse? apiErrorResponse;
+
+  ChapaNativeCheckoutPaymentValidateApiError({
+    this.apiErrorResponse,
   });
 }
 
 final class ChapaNativeCheckoutUnknownError extends ChapaNativeCheckoutState {}
 
 final class ChapaNativeCheckoutNetworkError extends ChapaNativeCheckoutState {}
-
-final class ChapaNativeCheckoutTimeout extends ChapaNativeCheckoutState {}

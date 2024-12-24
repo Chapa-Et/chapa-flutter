@@ -33,6 +33,37 @@ class DBHelper {
     return cart;
   }
 
+  Future<Cart> addToCart(Cart cart) async {
+    var dbClient = await database;
+
+    if (dbClient != null) {
+      List<Map> existingProduct = await dbClient.query(
+        'cart',
+        where: 'productId = ?',
+        whereArgs: [cart.productId],
+      );
+
+      if (existingProduct.isEmpty) {
+        await dbClient.insert(
+          'cart',
+          cart.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.ignore,
+        );
+      } else {
+        await dbClient.update(
+          'cart',
+          {
+            'quantity':
+                (cart.quantity?.value ?? 0) + existingProduct[0]['quantity']
+          },
+          where: 'productId = ?',
+          whereArgs: [cart.productId],
+        );
+      }
+    }
+    return cart;
+  }
+
   Future<List<Cart>> getCartList() async {
     var dbClient = await database;
     final List<Map<String, Object?>> queryResult =

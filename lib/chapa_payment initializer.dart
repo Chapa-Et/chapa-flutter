@@ -1,8 +1,8 @@
 import 'package:chapasdk/features/native-checkout/chapa_native_payment.dart';
 import 'package:flutter/material.dart';
-import 'constants/common.dart';
-import 'constants/requests.dart';
-import 'constants/strings.dart';
+import 'package:chapasdk/domain/constants/common.dart';
+import 'package:chapasdk/domain/constants/requests.dart';
+import 'package:chapasdk/domain/constants/strings.dart';
 
 class Chapa {
   BuildContext context;
@@ -18,29 +18,37 @@ class Chapa {
   String desc;
   String namedRouteFallBack;
   bool nativeCheckout;
-  bool defaultCheckout;
-  String encryptionKey;
 
-  Chapa.paymentParameters(
-      {required this.context,
-      required this.publicKey,
-      required this.currency,
-      required this.amount,
-      required this.email,
-      required this.phone,
-      required this.firstName,
-      required this.lastName,
-      required this.txRef,
-      required this.title,
-      required this.desc,
-      required this.namedRouteFallBack,
-      this.nativeCheckout = false,
-      this.defaultCheckout = true,
-      required this.encryptionKey}) {
+  final Widget? child;
+  final Color? buttonColor;
+  final Color? labelTextColor;
+  final bool? showPaymentMethodsOnGridView;
+  List<String>? availablePaymentMethods;
+
+  Chapa.paymentParameters({
+    required this.context,
+    required this.publicKey,
+    required this.currency,
+    required this.amount,
+    required this.email,
+    required this.phone,
+    required this.firstName,
+    required this.lastName,
+    required this.txRef,
+    required this.title,
+    required this.desc,
+    required this.namedRouteFallBack,
+    this.nativeCheckout = false,
+    this.child,
+    this.buttonColor,
+    this.labelTextColor,
+    this.showPaymentMethodsOnGridView,
+    this.availablePaymentMethods,
+  }) {
     _validateKeys();
     currency = currency.toUpperCase();
     if (_validateKeys()) {
-      initatePayment();
+      initiatePayment();
     }
   }
 
@@ -66,8 +74,8 @@ class Chapa {
     return true;
   }
 
-  void initatePayment() async {
-    if (nativeCheckout || (nativeCheckout && defaultCheckout)) {
+  void initiatePayment() async {
+    if (nativeCheckout) {
       Navigator.push(
           context,
           MaterialPageRoute(
@@ -84,40 +92,16 @@ class Chapa {
               title: title,
               desc: desc,
               txRef: txRef,
-              defaultCheckout: defaultCheckout,
-              encryptionKey: encryptionKey,
+              buttonColor: buttonColor,
+              labelTextColor: labelTextColor,
+              showPaymentMethodsOnGridView: showPaymentMethodsOnGridView,
+              availablePaymentMethods: availablePaymentMethods ?? [],
+              child: child,
             ),
           ));
-    } else if (defaultCheckout) {
-      intilizeMyPayment(
-        context,
-        publicKey,
-        email,
-        phone,
-        amount,
-        currency,
-        firstName,
-        lastName,
-        txRef,
-        title,
-        desc,
-        namedRouteFallBack,
-      );
     } else {
-      intilizeMyPayment(
-        context,
-        publicKey,
-        email,
-        phone,
-        amount,
-        currency,
-        firstName,
-        lastName,
-        txRef,
-        title,
-        desc,
-        namedRouteFallBack,
-      );
+      initializeMyPayment(context, email, phone, amount, currency, firstName,
+          lastName, txRef, title, desc, namedRouteFallBack, publicKey);
     }
   }
 }
