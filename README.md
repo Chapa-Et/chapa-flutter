@@ -13,24 +13,26 @@ The official **Chapa Flutter SDK** enables Flutter developers to integrate Chapa
 ---
 ## **Preview**
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <div style="text-align: center;">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+  <div style="width: 48%; text-align: center;">
     <p>Payment Methods in Grid View</p>
-    <img src="doc/gridview.png" alt="Payment Methods in Grid View" style="width: 200px;" />
+    <img src="doc/gridview.png" alt="Payment Methods in Grid View" style="width: 100%;" />
   </div>
-  <div style="text-align: center;">
+  <div style="width: 48%; text-align: center;">
     <p>Payment Methods in List View with Customized Button Color</p>
-    <img src="doc/listview.png" alt="Payment Methods in List View" style="width: 200px;" />
+    <img src="doc/listview.png" alt="Payment Methods in List View" style="width: 100%;" />
   </div>
-  <div style="text-align: center;">
+  
+  <div style="width: 48%; text-align: center;">
     <p>Error</p>
-    <img src="doc/error.png" alt="Error" style="width: 200px;" />
+    <img src="doc/error.png" alt="Error" style="width: 100%;" />
   </div>
-  <div style="text-align: center;">
+  <div style="width: 48%; text-align: center;">
     <p>Successful Payment Receipt</p>
-    <img src="doc/success.png" alt="Successful Payment Receipt" style="width: 200px;" />
+    <img src="doc/success.png" alt="Successful Payment Receipt" style="width: 100%;" />
   </div>
 </div>
+
 
 
 
