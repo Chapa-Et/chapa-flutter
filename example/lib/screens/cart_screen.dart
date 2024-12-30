@@ -276,25 +276,26 @@ class _CartScreenState extends State<CartScreen> {
                 ///
                 Chapa.paymentParameters(
                   context: context, // context
-                  publicKey: 'CHAPUBK-@@@@',
+                  publicKey: 'CHAPUBK-@@@',
                   currency: 'ETB',
                   amount: '1',
-                  email: 'xyz@gmail.com',
+                  email: 'fetan@chapa.co',
                   phone: '0964001822',
                   firstName: 'Israel',
-                  lastName: 'I',
+                  lastName: 'Goytom',
                   txRef: transactionRef,
                   title: 'Test Payment',
                   desc: 'Text Payment',
-                  nativeCheckout: false,
+                  nativeCheckout: true,
                   namedRouteFallBack: '/',
-                  showPaymentMethodsOnGridView: true,
+                  showPaymentMethodsOnGridView: false,
                   availablePaymentMethods: [
                     'mpesa',
                     'cbebirr',
                     'telebirr',
                     'ebirr',
                   ],
+                  buttonColor: Colors.red
                 );
               },
               child: Text(
