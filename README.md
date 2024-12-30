@@ -136,6 +136,6 @@ For any questions or issues:
 - **Email:** [info@chapa.co](mailto:infot@chapa.co)  
 - **Call Center:** [+251960724272](tel:+251960724272)  
 - **Short Code:**  [8911](tel:8911) 
-- **Documentation:** [Chapa Developer Docs](https://chapa.co/documenation)  
+- **Documentation:** [Chapa Developer Docs](https://developer.chapa.co/)  
 
 Start building seamless payment experiences today with the **Chapa Flutter SDK**! 🚀
