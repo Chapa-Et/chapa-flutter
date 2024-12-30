@@ -13,17 +13,24 @@ The official **Chapa Flutter SDK** enables Flutter developers to integrate Chapa
 ---
 ## **Preview**
 
-### Payment Methods in Grid View
-<img src="doc/gridview.png" />
-
-### Payment Methods in List View with Customized Button Color 
-<img src="doc/listview.png" />
-
-### Error
-<img src="doc/error.png" />
-
-### Successful Payment Receipt
-<img src="doc/success.png" />
+<div style="display: flex; justify-content: space-between; align-items: center;">
+  <div style="text-align: center;">
+    <p>Payment Methods in Grid View</p>
+    <img src="doc/gridview.png" alt="Payment Methods in Grid View" style="width: 200px;" />
+  </div>
+  <div style="text-align: center;">
+    <p>Payment Methods in List View with Customized Button Color</p>
+    <img src="doc/listview.png" alt="Payment Methods in List View" style="width: 200px;" />
+  </div>
+  <div style="text-align: center;">
+    <p>Error</p>
+    <img src="doc/error.png" alt="Error" style="width: 200px;" />
+  </div>
+  <div style="text-align: center;">
+    <p>Successful Payment Receipt</p>
+    <img src="doc/success.png" alt="Successful Payment Receipt" style="width: 200px;" />
+  </div>
+</div>
 
 
 
