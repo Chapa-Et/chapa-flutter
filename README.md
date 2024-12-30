@@ -11,6 +11,21 @@ The official **Chapa Flutter SDK** enables Flutter developers to integrate Chapa
 - 🌐 **Web Checkout Support:** Enable users to use the web checkout for additional payment options.
 
 ---
+## **Preview**
+
+### Payment Methods in Grid View
+<img src="doc/gridview.png" />
+
+### Payment Methods in List View with Customized Button Color 
+<img src="doc/listview.png" />
+
+### Error
+<img src="doc/error.png" />
+
+### Successful Payment Receipt
+<img src="doc/success.png" />
+
+
 
 ## **Getting Started**
 
