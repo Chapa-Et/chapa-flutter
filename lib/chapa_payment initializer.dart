@@ -19,9 +19,8 @@ class Chapa {
   String namedRouteFallBack;
   bool nativeCheckout;
 
-  final Widget? child;
   final Color? buttonColor;
-  final Color? labelTextColor;
+
   final bool? showPaymentMethodsOnGridView;
   List<String>? availablePaymentMethods;
 
@@ -39,9 +38,7 @@ class Chapa {
     required this.desc,
     required this.namedRouteFallBack,
     this.nativeCheckout = false,
-    this.child,
     this.buttonColor,
-    this.labelTextColor,
     this.showPaymentMethodsOnGridView,
     this.availablePaymentMethods,
   }) {
@@ -93,10 +90,8 @@ class Chapa {
               desc: desc,
               txRef: txRef,
               buttonColor: buttonColor,
-              labelTextColor: labelTextColor,
               showPaymentMethodsOnGridView: showPaymentMethodsOnGridView,
               availablePaymentMethods: availablePaymentMethods ?? [],
-              child: child,
             ),
           ));
     } else {

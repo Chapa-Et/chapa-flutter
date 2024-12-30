@@ -31,9 +31,7 @@ class ChapaNativePayment extends StatefulWidget {
   final String title;
   final String desc;
   final String namedRouteFallBack;
-  final Widget? child;
   final Color? buttonColor;
-  final Color? labelTextColor;
   final bool? showPaymentMethodsOnGridView;
   List<String> availablePaymentMethods;
 
@@ -51,9 +49,7 @@ class ChapaNativePayment extends StatefulWidget {
     required this.desc,
     required this.namedRouteFallBack,
     required this.currency,
-    this.child,
     this.buttonColor,
-    this.labelTextColor,
     this.showPaymentMethodsOnGridView,
     this.availablePaymentMethods = const [
       "telebirr",
@@ -257,7 +253,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              widget.child ?? Container(),
               Text(
                 "Payment Method",
                 style: Theme.of(context).textTheme.labelMedium,
@@ -417,7 +412,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                 },
               ),
               Spacer(),
-             
             ],
           ),
         ),
