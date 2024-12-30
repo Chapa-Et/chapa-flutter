@@ -18,13 +18,15 @@ The official **Chapa Flutter SDK** enables Flutter developers to integrate Chapa
 
 Add the following dependency to your `pubspec.yaml` file:
 
-```dependencies:
+```yaml
+dependencies:
   chapasdk: ^latest_version
 ```
 
 Then, run the command:  
 
-```flutter pub get
+```bash
+flutter pub get
 ```
 
 ---
@@ -81,7 +83,8 @@ Chapa.paymentParameters(
 ## **Payment Responses**
 
 ### For Native Checkout:
-```{
+```json
+{
   "message": "Any Descriptive message regarding the payment status",
   "transactionReference": "txn_12345",
   "paidAmount": "1.00"
@@ -90,21 +93,24 @@ Chapa.paymentParameters(
 
 ### For Web Checkout:
 #### Payment Canceled:
-```{
+```json
+{
   "message": "paymentCancelled",
   "transactionReference": "txn_12345",
   "paidAmount": "0.00"
 }
 ```
 #### Payment Successful:
-```{
+```json
+{
   "message": "paymentSuccessful",
   "transactionReference": "txn_12345",
   "paidAmount": "1.00"
 }
 ```
 #### Payment Failed:
-```{
+```json
+{
   "message": "paymentFailed",
   "transactionReference": "txn_12345",
   "paidAmount": "0.00"
