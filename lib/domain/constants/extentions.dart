@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:chapasdk/domain/constants/app_images.dart';
 import 'package:chapasdk/domain/constants/enums.dart';
 import 'package:intl/intl.dart';
@@ -112,7 +114,8 @@ extension VerificationTypeExtention on VerificationType {
 
 List<LocalPaymentMethods> getFilteredPaymentMethods(List<String> filterValues) {
   return LocalPaymentMethods.values.where((paymentMethod) {
-    return filterValues.any((filter) => filter == paymentMethod.value());
+    return filterValues.any((filter) =>
+        filter.toLowerCase() == paymentMethod.value().toLowerCase());
   }).toList();
 }
 
@@ -122,4 +125,13 @@ extension DateExtention on DateTime {
       this,
     );
   }
+}
+
+String generateTransactionRef() {
+  var r = Random();
+  const _chars =
+      'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+  String transactionRef =
+      List.generate(10, (index) => _chars[r.nextInt(_chars.length)]).join();
+  return transactionRef;
 }

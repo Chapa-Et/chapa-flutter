@@ -100,8 +100,20 @@ class Chapa {
             ),
           ));
     } else {
-      initializeMyPayment(context, email, phone, amount, currency, firstName,
-          lastName, txRef, title, desc, namedRouteFallBack, publicKey);
+      await initializeMyPayment(
+        context,
+        email,
+        phone,
+        amount,
+        currency,
+        firstName,
+        lastName,
+        txRef,
+        title,
+        desc,
+        namedRouteFallBack,
+        publicKey,
+      );
     }
   }
 }

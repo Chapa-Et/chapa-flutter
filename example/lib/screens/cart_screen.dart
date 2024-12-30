@@ -275,28 +275,27 @@ class _CartScreenState extends State<CartScreen> {
                 ///
                 ///
                 Chapa.paymentParameters(
-                    context: context, // context
-                    publicKey: 'CHAPUBK-dsUgHMc7yPc8hwmSP98BUYNZ0dBGJ5nW',
-                    currency: 'ETB',
-                    amount: '1',
-                    email: 'xyz@gmail.com',
-                    phone: '0964001822',
-                    firstName: 'Woynshet',
-                    lastName: 'Bilihatu',
-                    txRef: transactionRef,
-                    title: 'Test Payment',
-                    desc: 'Text Paymentd',
-                    nativeCheckout: true,
-                    namedRouteFallBack: '/checkoutPage',
-                    showPaymentMethodsOnGridView: true,
-                    availablePaymentMethods: [
-                      'telebirr',
-                      'ebirr',
-                      'mpesa',
-                      'cbebirr'
-                    ]
-                    // fall back route name
-                    );
+                  context: context, // context
+                  publicKey: 'CHAPUBK-@@@@',
+                  currency: 'ETB',
+                  amount: '1',
+                  email: 'xyz@gmail.com',
+                  phone: '0964001822',
+                  firstName: 'Israel',
+                  lastName: 'I',
+                  txRef: transactionRef,
+                  title: 'Test Payment',
+                  desc: 'Text Payment',
+                  nativeCheckout: false,
+                  namedRouteFallBack: '/',
+                  showPaymentMethodsOnGridView: true,
+                  availablePaymentMethods: [
+                    'mpesa',
+                    'cbebirr',
+                    'telebirr',
+                    'ebirr',
+                  ],
+                );
               },
               child: Text(
                 'Proceed to Pay',

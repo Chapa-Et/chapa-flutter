@@ -1,16 +1,19 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 import 'package:chapasdk/domain/constants/app_colors.dart';
 import 'package:chapasdk/domain/constants/app_images.dart';
 import 'package:chapasdk/domain/constants/enums.dart';
 import 'package:chapasdk/domain/constants/extentions.dart';
 import 'package:chapasdk/domain/constants/requests.dart';
+import 'package:chapasdk/domain/custom-widget/contact_us.dart';
 import 'package:chapasdk/domain/custom-widget/custom_button.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
 import 'package:chapasdk/data/services/payment_service.dart';
 import 'package:chapasdk/domain/custom-widget/custom_textform.dart';
 import 'package:chapasdk/domain/custom-widget/no_connection.dart';
 import 'package:chapasdk/features/native-checkout/bloc/chapa_native_checkout_bloc.dart';
+import 'package:chapasdk/features/network/bloc/network_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -67,14 +70,14 @@ class ChapaNativePayment extends StatefulWidget {
 class _ChapaNativePaymentState extends State<ChapaNativePayment> {
   PaymentService paymentService = PaymentService();
   LocalPaymentMethods? selectedLocalPaymentMethods;
-
-  late ChapaNativeCheckoutBloc _chapaNativeCheckoutBloc;
-
-  bool _isDialogShowing = false;
   final _formKey = GlobalKey<FormState>();
   TextEditingController phoneNumberController = TextEditingController();
-  List<LocalPaymentMethods> paymentMethods = [];
+  late ChapaNativeCheckoutBloc _chapaNativeCheckoutBloc;
+  late NetworkBloc _networkBloc;
+  bool chapasButtonIsClicked = false;
   bool showPaymentMethodError = false;
+  bool _isDialogShowing = false;
+  List<LocalPaymentMethods> paymentMethods = [];
 
   @override
   void initState() {
@@ -84,6 +87,7 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
 
     _chapaNativeCheckoutBloc =
         ChapaNativeCheckoutBloc(paymentService: PaymentService());
+    _networkBloc = NetworkBloc();
 
     setState(() {
       if (widget.availablePaymentMethods.isNotEmpty) {
@@ -106,9 +110,10 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
   }
 
   exitPaymentPage(String message) {
-    Navigator.pushReplacementNamed(
+    Navigator.pushNamedAndRemoveUntil(
       context,
       widget.namedRouteFallBack,
+      (Route<dynamic> route) => false,
       arguments: {
         'message': message,
         'transactionReference': widget.txRef,
@@ -158,23 +163,45 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
 
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: true,
+        leading: IconButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: Icon(
+              Platform.isAndroid ? Icons.arrow_back : Icons.arrow_back_ios,
+              color: Theme.of(context).iconTheme.color,
+            )),
         title: Text(
           "Checkout",
           style: Theme.of(context).textTheme.titleMedium,
         ),
       ),
-      body: StreamBuilder<ChapaNativeCheckoutState>(
-        stream: _chapaNativeCheckoutBloc.stream,
-        initialData: ChapaNativeCheckoutInitial(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final state = snapshot.data;
-            return _buildStreamState(state, deviceSize);
+      body: StreamBuilder<NetworkState>(
+        stream: _networkBloc.stream,
+        initialData: NetworkInitial(),
+        builder: (context, netSnapshot) {
+          if (netSnapshot.hasData) {
+            final netState = netSnapshot.data;
+            if (netState is OnNetworkNotConnected) {
+              return const NoConnection();
+            } else {
+              return StreamBuilder<ChapaNativeCheckoutState>(
+                stream: _chapaNativeCheckoutBloc.stream,
+                initialData: ChapaNativeCheckoutInitial(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    final state = snapshot.data;
+                    return _buildStreamState(state, deviceSize);
+                  } else {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                },
+              );
+            }
           } else {
-            return const Center(
-              child: CircularProgressIndicator(),
-            );
+            return const NoConnection();
           }
         },
       ),
@@ -207,6 +234,10 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
     }
     if (state is ChapaNativeCheckoutNetworkError) {
       return NoConnection();
+    }
+
+    if (state is ChapaNativeCheckoutUnknownError) {
+      return ContactUs();
     }
 
     return _buildPaymentForm(state, deviceSize);
@@ -248,9 +279,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                   selectedPaymentMethod: selectedLocalPaymentMethods,
                 ),
               ),
-              SizedBox(
-                height: deviceSize.height * 0.012,
-              ),
               Visibility(
                 visible: showPaymentMethodError,
                 child: Text(
@@ -262,7 +290,7 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                 ),
               ),
               SizedBox(
-                height: deviceSize.height * 0.004,
+                height: deviceSize.height * 0.02,
               ),
               Text(
                 "Phone Number",
@@ -303,9 +331,17 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                 filledColor: Colors.transparent,
                 obscureText: false,
                 onTap: () {},
-                validator: (val) {
-                  if (val == null || val.isEmpty) {
-                    return "Phone number can not be empty";
+                validator: (phone) {
+                  if (phone == null || phone.isEmpty) {
+                    return 'Phone number can\'t be empty';
+                  }
+
+                  if (!RegExp(r'^[0-9]{10}$').hasMatch(phone)) {
+                    return 'Phone number must be a 10-digit number';
+                  }
+
+                  if (!RegExp(r'^(09|07|011)').hasMatch(phone)) {
+                    return 'Enter a valid phone no.';
                   }
                   return null;
                 },
@@ -315,20 +351,29 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                 alignment: Alignment.topRight,
                 child: TextButton(
                   onPressed: () async {
-                    await initializeMyPayment(
-                      widget.context,
-                      widget.email,
-                      widget.phone,
-                      widget.amount,
-                      widget.currency,
-                      widget.firstName,
-                      widget.lastName,
-                      widget.txRef,
-                      widget.title,
-                      widget.desc,
-                      widget.namedRouteFallBack,
-                      widget.publicKey,
-                    );
+                    if (!chapasButtonIsClicked) {
+                      String transactionRef = generateTransactionRef();
+                      await initializeMyPayment(
+                        widget.context,
+                        widget.email,
+                        widget.phone,
+                        widget.amount,
+                        widget.currency,
+                        widget.firstName,
+                        widget.lastName,
+                        transactionRef,
+                        widget.title,
+                        widget.desc,
+                        widget.namedRouteFallBack,
+                        widget.publicKey,
+                      ).then((String result) {
+                        if (result.isNotEmpty) {
+                          setState(() {
+                            chapasButtonIsClicked = true;
+                          });
+                        }
+                      });
+                    }
                   },
                   child: Text(
                     "Pay with Chapa",
@@ -371,10 +416,8 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                   }
                 },
               ),
-              SizedBox(
-                height: deviceSize.height * 0.048,
-              ),
               Spacer(),
+             
             ],
           ),
         ),
@@ -431,7 +474,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
               backgroundColor:
                   widget.buttonColor ?? Theme.of(context).primaryColor,
               onPressed: () {
-                Navigator.pop(context);
                 exitPaymentPage(state.directChargeValidateResponse.message ??
                     "Payment is Failed");
               },
@@ -578,7 +620,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
               width: deviceSize.width * 0.72,
               child: CustomButton(
                 onPressed: () {
-                  Navigator.pop(context);
                   exitPaymentPage('paymentSuccessful');
                 },
                 title: "Finish",
@@ -632,7 +673,8 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
           Align(
             alignment: Alignment.center,
             child: Text(
-              state?.directChargeApiError?.paymentStatus ?? "Payment Failed",
+              state?.directChargeApiError?.status?.toUpperCase() ??
+                  "Payment Failed",
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     color: Colors.red,
                     fontWeight: FontWeight.w500,
@@ -644,6 +686,7 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
           ),
           Text(
             state?.directChargeApiError?.data?.message ??
+                state?.directChargeApiError?.message ??
                 "Something went wrong",
             style: Theme.of(context).textTheme.bodyMedium,
             textAlign: TextAlign.center,
@@ -655,7 +698,6 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
             backgroundColor:
                 widget.buttonColor ?? Theme.of(context).primaryColor,
             onPressed: () {
-              Navigator.pop(context);
               exitPaymentPage(
                   state?.directChargeApiError?.message ?? "Payment is Failed");
             },
@@ -710,7 +752,6 @@ class _PaymentMethodsCustomBuilderViewState
             color: AppColors.shadowColor,
             // padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
             child: GridView.count(
-              physics: NeverScrollableScrollPhysics(),
               scrollDirection: Axis.vertical,
               crossAxisCount: 3,
               shrinkWrap: true,

@@ -44,26 +44,24 @@ class _ChapaWebViewState extends State<ChapaWebView> {
     super.initState();
   }
 
-  void checkConnectivity() {
+  void checkConnectivity() async {
     connection = Connectivity()
         .onConnectivityChanged
-        .listen((List<ConnectivityResult> result) {
+        .listen((List<ConnectivityResult> result) async {
       if (result.contains(ConnectivityResult.none)) {
-        setState(() {
-          isOffline = true;
-        });
-        showErrorToast(ChapaStrings.connectionError);
-
-        exitPaymentPage(ChapaStrings.connectionError);
-      } else if (result.contains(ConnectivityResult.mobile)) {
-        setState(() {
-          isOffline = false;
-        });
-      } else if (result.contains(ConnectivityResult.wifi)) {
-        setState(() {
-          isOffline = false;
-        });
-      } else if (result.contains(ConnectivityResult.ethernet)) {
+        await Future.delayed(const Duration(microseconds: 5));
+        final newConnectivityStatus = await Connectivity().checkConnectivity();
+        if (newConnectivityStatus.contains(ConnectivityResult.none)) {
+          setState(() {
+            isOffline = true;
+          });
+          showErrorToast(ChapaStrings.connectionError);
+          exitPaymentPage(ChapaStrings.connectionError);
+        }
+      } else if (result.contains(ConnectivityResult.mobile) ||
+          result.contains(ConnectivityResult.wifi) ||
+          result.contains(ConnectivityResult.ethernet) ||
+          result.contains(ConnectivityResult.vpn)) {
         setState(() {
           isOffline = false;
         });
@@ -77,9 +75,10 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   }
 
   exitPaymentPage(String message) {
-    Navigator.pushReplacementNamed(
+    Navigator.pushNamedAndRemoveUntil(
       context,
       widget.fallBackNamedUrl,
+      (Route<dynamic> route) => false,
       arguments: {
         'message': message,
         'transactionReference': widget.transactionReference,
@@ -96,101 +95,104 @@ class _ChapaWebViewState extends State<ChapaWebView> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.chapaSecondaryColor,
-          title: Text(
-            "Checkout",
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium!
-                .copyWith(color: Colors.white),
-          ),
-          actions: [
-            TextButton.icon(
-              onPressed: () {
-                exitPaymentPage("paymentCancelled");
-              },
-              icon: Text(
-                "Cancel",
-                style: Theme.of(context)
-                    .textTheme
-                    .titleSmall!
-                    .copyWith(color: Colors.white),
-              ),
-              label: Icon(
-                Icons.close,
-                color: Colors.white,
-              ),
-            )
-          ],
-        ),
-        body: Column(children: <Widget>[
-          Expanded(
-            child: InAppWebView(
-              initialUrlRequest: URLRequest(
-                url: WebUri(
-                  (widget.url),
-                ),
-              ),
-              onWebViewCreated: (controller) {
-                setState(() {
-                  webViewController = controller;
-                });
-                controller.addJavaScriptHandler(
-                    handlerName: "buttonState",
-                    callback: (args) async {
-                      webViewController = controller;
-                      if (args[2][1] == 'CancelbuttonClicked') {
-                        exitPaymentPage('paymentCancelled');
-                      }
-
-                      return args.reduce((curr, next) => curr + next);
-                    });
-              },
-              onUpdateVisitedHistory: (InAppWebViewController controller,
-                  Uri? uri, androidIsReload) async {
-                if (uri.toString() == 'https://chapa.co') {
-                  exitPaymentPage('paymentSuccessful');
-                }
-                if (uri.toString().contains('checkout/payment-receipt/')) {
-                  // await delay();
-                  await Future.delayed(const Duration(seconds: 5));
-                  exitPaymentPage('paymentSuccessful');
-                }
-                controller.addJavaScriptHandler(
-                    handlerName: "handlerFooWithArgs",
-                    callback: (args) async {
-                      webViewController = controller;
-                      if (args[2][1] == 'failed') {
-                        await delay();
-
-                        exitPaymentPage('paymentFailed');
-                      }
-                      if (args[2][1] == 'success') {
-                        await delay();
-                        exitPaymentPage('paymentSuccessful');
-                      }
-                      return args.reduce((curr, next) => curr + next);
-                    });
-
-                controller.addJavaScriptHandler(
-                    handlerName: "buttonState",
-                    callback: (args) async {
-                      webViewController = controller;
-
-                      if (args[2][1] == 'CancelbuttonClicked') {
-                        exitPaymentPage('paymentCancelled');
-                      }
-
-                      return args.reduce((curr, next) => curr + next);
-                    });
-              },
+    return PopScope(
+      canPop: false,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: Scaffold(
+          appBar: AppBar(
+            backgroundColor: AppColors.chapaSecondaryColor,
+            title: Text(
+              "Checkout",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleMedium!
+                  .copyWith(color: Colors.white),
             ),
+            actions: [
+              TextButton.icon(
+                onPressed: () {
+                  exitPaymentPage("paymentCancelled");
+                },
+                icon: Text(
+                  "Cancel",
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleSmall!
+                      .copyWith(color: Colors.white),
+                ),
+                label: Icon(
+                  Icons.close,
+                  color: Colors.white,
+                ),
+              )
+            ],
           ),
-        ]),
+          body: Column(children: <Widget>[
+            Expanded(
+              child: InAppWebView(
+                initialUrlRequest: URLRequest(
+                  url: WebUri(
+                    (widget.url),
+                  ),
+                ),
+                onWebViewCreated: (controller) {
+                  setState(() {
+                    webViewController = controller;
+                  });
+                  controller.addJavaScriptHandler(
+                      handlerName: "buttonState",
+                      callback: (args) async {
+                        webViewController = controller;
+                        if (args[2][1] == 'CancelbuttonClicked') {
+                          exitPaymentPage('paymentCancelled');
+                        }
+
+                        return args.reduce((curr, next) => curr + next);
+                      });
+                },
+                onUpdateVisitedHistory: (InAppWebViewController controller,
+                    Uri? uri, androidIsReload) async {
+                  if (uri.toString() == 'https://chapa.co') {
+                    exitPaymentPage('paymentSuccessful');
+                  }
+                  if (uri.toString().contains('checkout/payment-receipt/')) {
+                    // await delay();
+                    await Future.delayed(const Duration(seconds: 5));
+                    exitPaymentPage('paymentSuccessful');
+                  }
+                  controller.addJavaScriptHandler(
+                      handlerName: "handlerFooWithArgs",
+                      callback: (args) async {
+                        webViewController = controller;
+                        if (args[2][1] == 'failed') {
+                          await delay();
+
+                          exitPaymentPage('paymentFailed');
+                        }
+                        if (args[2][1] == 'success') {
+                          await delay();
+                          exitPaymentPage('paymentSuccessful');
+                        }
+                        return args.reduce((curr, next) => curr + next);
+                      });
+
+                  controller.addJavaScriptHandler(
+                      handlerName: "buttonState",
+                      callback: (args) async {
+                        webViewController = controller;
+
+                        if (args[2][1] == 'CancelbuttonClicked') {
+                          exitPaymentPage('paymentCancelled');
+                        }
+
+                        return args.reduce((curr, next) => curr + next);
+                      });
+                },
+              ),
+            ),
+          ]),
+        ),
       ),
     );
   }

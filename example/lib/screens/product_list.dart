@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -16,45 +18,57 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   DBHelper dbHelper = DBHelper();
-
+  CartProvider cartProvider = CartProvider();
   List<Item> products = [
     Item(
+      productId: 1,
       name: 'Apple',
       unit: 'Kg',
       price: 20,
       image: 'assets/images/apple.png',
     ),
     Item(
+      productId: 2,
       name: 'Mango',
       unit: 'Doz',
       price: 30,
       image: 'assets/images/mango.png',
     ),
     Item(
+      productId: 3,
       name: 'Banana',
       unit: 'Doz',
       price: 10,
       image: 'assets/images/banana.png',
     ),
     Item(
+        productId: 4,
         name: 'Grapes',
         unit: 'Kg',
         price: 8,
         image: 'assets/images/grapes.png'),
     Item(
-        name: 'Water Melon',
-        unit: 'Kg',
-        price: 25,
-        image: 'assets/images/watermelon.png'),
-    Item(name: 'Kiwi', unit: 'Pc', price: 40, image: 'assets/images/kiwi.png'),
+      productId: 5,
+      name: 'Water Melon',
+      unit: 'Kg',
+      price: 25,
+      image: 'assets/images/watermelon.png',
+    ),
     Item(
+      productId: 6,
+      name: 'Kiwi',
+      unit: 'Pc',
+      price: 40,
+      image: 'assets/images/kiwi.png',
+    ),
+    Item(
+        productId: 7,
         name: 'Orange',
         unit: 'Doz',
         price: 15,
         image: 'assets/images/orange.png'),
   ];
 
-  //List<bool> clicked = List.generate(10, (index) => false, growable: true);
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
@@ -63,7 +77,7 @@ class _ProductListState extends State<ProductList> {
           .addToCart(
         Cart(
           id: index,
-          productId: index.toString(),
+          productId: products[index].productId.toString(),
           productName: products[index].name,
           initialPrice: products[index].price,
           productPrice: products[index].price,
@@ -75,11 +89,10 @@ class _ProductListState extends State<ProductList> {
           .then((value) {
         cart.addTotalPrice(products[index].price.toDouble());
         cart.addCounter();
-        print('Product Added to cart');
       }).onError((error, stackTrace) {
-        print("Error here");
-        print(stackTrace);
-        print(error.toString());
+        log("Error here");
+        log('$error');
+        log(error.toString());
       });
     }
 

@@ -98,10 +98,10 @@ class ChapaNativeCheckoutBloc
         } else if (networkResponse is NetworkError) {
           emit(ChapaNativeCheckoutNetworkError());
         } else {
-          emit(ChapaNativeCheckoutNetworkError());
+          emit(ChapaNativeCheckoutUnknownError());
         }
       } catch (e) {
-        emit(ChapaNativeCheckoutNetworkError());
+        emit(ChapaNativeCheckoutUnknownError());
       }
     });
   }

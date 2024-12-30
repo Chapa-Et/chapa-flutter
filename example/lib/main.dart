@@ -24,8 +24,10 @@ class MyApp extends StatelessWidget {
           theme: ThemeData(
             primarySwatch: Colors.green,
           ),
-          routes: {'/checkoutPage': (context) => const CartScreen()},
-          home: const ProductList(),
+          routes: {
+            '/checkoutPage': (context) => const CartScreen(),
+            '/': (context) => ProductList()
+          },
         );
       }),
     );

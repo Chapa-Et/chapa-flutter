@@ -87,7 +87,6 @@ class ApiClient {
         ));
       }
     } on DioException catch (e) {
-     
       try {
         switch (e.type) {
           case DioExceptionType.connectionError:

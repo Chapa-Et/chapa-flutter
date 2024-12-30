@@ -28,7 +28,7 @@ class PaymentService {
     );
   }
 
-  Future verifyPayment(
+  Future<NetworkResponse> verifyPayment(
       {required ValidateDirectChargeRequest body,
       required String publicKey}) async {
     return apiClient.request(
