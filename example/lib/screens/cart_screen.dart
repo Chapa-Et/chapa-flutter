@@ -295,7 +295,6 @@ class _CartScreenState extends State<CartScreen> {
                     'telebirr',
                     'ebirr',
                   ],
-                  buttonColor: Colors.red
                 );
               },
               child: Text(
