@@ -105,14 +105,14 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
     super.dispose();
   }
 
-  exitPaymentPage(String message) {
+  exitPaymentPage(String message, String? chapaTransactionRef) {
     Navigator.pushNamedAndRemoveUntil(
       context,
       widget.namedRouteFallBack,
       (Route<dynamic> route) => false,
       arguments: {
         'message': message,
-        'transactionReference': widget.txRef,
+        'transactionReference': chapaTransactionRef ?? widget.txRef,
         'paidAmount': widget.amount
       },
     );
@@ -464,14 +464,19 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
             SizedBox(
               height: deviceSize.height * 0.04,
             ),
-            CustomButton(
-              backgroundColor:
-                  widget.buttonColor ?? Theme.of(context).primaryColor,
-              onPressed: () {
-                exitPaymentPage(state.directChargeValidateResponse.message ??
-                    "Payment is Failed");
-              },
-              title: "Retry Again",
+            SizedBox(
+              width: deviceSize.width * 0.64,
+              child: CustomButton(
+                backgroundColor: Colors.red,
+                onPressed: () {
+                  exitPaymentPage(
+                    state.directChargeValidateResponse.message ??
+                        "Payment is Failed",
+                    state.directChargeValidateResponse.trxRef,
+                  );
+                },
+                title: "Retry Again",
+              ),
             )
           ],
         ),
@@ -614,7 +619,10 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
               width: deviceSize.width * 0.72,
               child: CustomButton(
                 onPressed: () {
-                  exitPaymentPage('paymentSuccessful');
+                  exitPaymentPage(
+                    'paymentSuccessful',
+                    state.directChargeValidateResponse.trxRef,
+                  );
                 },
                 title: "Finish",
               ),
@@ -688,14 +696,18 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
           SizedBox(
             height: deviceSize.height * 0.04,
           ),
-          CustomButton(
-            backgroundColor:
-                widget.buttonColor ?? Theme.of(context).primaryColor,
-            onPressed: () {
-              exitPaymentPage(
-                  state?.directChargeApiError?.message ?? "Payment is Failed");
-            },
-            title: "Retry Again",
+          SizedBox(
+            width: deviceSize.width * 0.64,
+            child: CustomButton(
+              backgroundColor: Colors.red,
+              onPressed: () {
+                exitPaymentPage(
+                  state?.directChargeApiError?.message ?? "Payment is Failed",
+                  null,
+                );
+              },
+              title: "Retry Again",
+            ),
           )
         ],
       ),
@@ -710,7 +722,9 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
         children: [
           Text(state.apiErrorResponse?.status ?? "Error occurred"),
           const SizedBox(height: 8),
-          Text(state.apiErrorResponse?.message ?? "Something went wrong"),
+          Text(
+            state.apiErrorResponse?.message ?? "Something went wrong",
+          ),
         ],
       ),
     );

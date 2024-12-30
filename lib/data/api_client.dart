@@ -68,7 +68,6 @@ class ApiClient {
           response = await dioClient.put(path, options: options, data: data);
           break;
       }
-
       try {
         if (response == null) {
           return Success(
