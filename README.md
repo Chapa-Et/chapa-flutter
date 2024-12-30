@@ -135,7 +135,7 @@ Yes, `namedRouteFallBack` is required to handle post-payment events such as succ
 For any questions or issues:  
 - **Email:** [info@chapa.co](mailto:infot@chapa.co)  
 - **Call Center:** [+251960724272](tel:+251960724272)  
-- **Short Code:**  [tel:8911](tel:8911) 
+- **Short Code:**  [8911](tel:8911) 
 - **Documentation:** [Chapa Developer Docs](https://chapa.co/documenation)  
 
 Start building seamless payment experiences today with the **Chapa Flutter SDK**! 🚀
