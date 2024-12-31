@@ -1,4 +1,6 @@
-import 'package:badges/badges.dart';
+import 'dart:math';
+
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_app/database/db_helper.dart';
@@ -45,9 +47,12 @@ class _CartScreenState extends State<CartScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('My Shopping Cart'),
+        title: Text(
+          'My Shopping Cart',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         actions: [
-          Badge(
+          badge.Badge(
             badgeContent: Consumer<CartProvider>(
               builder: (context, value, child) {
                 return Text(
@@ -57,7 +62,7 @@ class _CartScreenState extends State<CartScreen> {
                 );
               },
             ),
-            position: const BadgePosition(start: 30, bottom: 30),
+            position: badge.BadgePosition.custom(start: 30, bottom: 30),
             child: IconButton(
               onPressed: () {},
               icon: const Icon(Icons.shopping_cart),
@@ -246,39 +251,63 @@ class _CartScreenState extends State<CartScreen> {
                 ],
               );
             },
-          )
-        ],
-      ),
-      bottomNavigationBar: InkWell(
-        onTap: () {
-          ///
-          Chapa.paymentParameters(
-            context: context, // context
-            publicKey: 'CHASECK_TEST-',
-            currency: 'etb',
-            amount: '300',
-            email: 'xyz@gmail.com',
-            phone: '911223344',
-            firstName: 'testname',
-            lastName: 'lastName',
-            txRef: '55ttyyy',
-            title: 'title',
-            desc: 'desc',
-            namedRouteFallBack: '/checkoutPage', // fall back route name
-          );
-        },
-        child: Container(
-          color: Colors.yellow.shade600,
-          alignment: Alignment.center,
-          height: 50.0,
-          child: const Text(
-            'Proceed to Pay',
-            style: TextStyle(
-              fontSize: 18.0,
-              fontWeight: FontWeight.bold,
+          ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.012,
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.9,
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: WidgetStateProperty.all<Color>(
+                    Theme.of(context).primaryColor),
+              ),
+              onPressed: () {
+                var r = Random();
+
+                const _chars =
+                    'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
+                String transactionRef = List.generate(
+                    10, (index) => _chars[r.nextInt(_chars.length)]).join();
+
+                ///
+                ///
+                ///
+                ///
+                Chapa.paymentParameters(
+                  context: context, // context
+                  publicKey: 'CHAPUBK-@@@',
+                  currency: 'ETB',
+                  amount: '1',
+                  email: 'fetan@chapa.co',
+                  phone: '0964001822',
+                  firstName: 'Israel',
+                  lastName: 'Goytom',
+                  txRef: transactionRef,
+                  title: 'Test Payment',
+                  desc: 'Text Payment',
+                  nativeCheckout: true,
+                  namedRouteFallBack: '/',
+                  showPaymentMethodsOnGridView: false,
+                  availablePaymentMethods: [
+                    'mpesa',
+                    'cbebirr',
+                    'telebirr',
+                    'ebirr',
+                  ],
+                );
+              },
+              child: Text(
+                'Proceed to Pay',
+                style:
+                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
             ),
           ),
-        ),
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.04,
+          )
+        ],
       ),
     );
   }
@@ -320,11 +349,11 @@ class ReusableWidget extends StatelessWidget {
         children: [
           Text(
             title,
-            style: Theme.of(context).textTheme.subtitle1,
+            //style: Theme.of(context).textTheme.subtitle1,
           ),
           Text(
             value.toString(),
-            style: Theme.of(context).textTheme.subtitle2,
+            //style: Theme.of(context).textTheme.subtitle2,
           ),
         ],
       ),

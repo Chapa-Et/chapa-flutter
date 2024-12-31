@@ -9,7 +9,9 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({
+    Key? key,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -20,10 +22,12 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primarySwatch: Colors.green,
           ),
-          routes: {'/checkoutPage': (context) => const CartScreen()},
-          home: const ProductList(),
+          routes: {
+            '/checkoutPage': (context) => const CartScreen(),
+            '/': (context) => ProductList()
+          },
         );
       }),
     );

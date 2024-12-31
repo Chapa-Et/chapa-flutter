@@ -1,4 +1,6 @@
-import 'package:badges/badges.dart';
+import 'dart:developer';
+
+import 'package:badges/badges.dart' as badge;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shopping_cart_app/model/item_model.dart';
@@ -8,7 +10,7 @@ import 'package:shopping_cart_app/model/cart_model.dart';
 import 'package:shopping_cart_app/screens/cart_screen.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({super.key});
 
   @override
   State<ProductList> createState() => _ProductListState();
@@ -16,59 +18,66 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   DBHelper dbHelper = DBHelper();
-
+  CartProvider cartProvider = CartProvider();
   List<Item> products = [
     Item(
-        name: 'Apple', unit: 'Kg', price: 20, image: 'assets/images/apple.png'),
+      productId: 1,
+      name: 'Apple',
+      unit: 'Kg',
+      price: 20,
+      image: 'assets/images/apple.png',
+    ),
     Item(
-        name: 'Mango',
-        unit: 'Doz',
-        price: 30,
-        image: 'assets/images/mango.png'),
+      productId: 2,
+      name: 'Mango',
+      unit: 'Doz',
+      price: 30,
+      image: 'assets/images/mango.png',
+    ),
     Item(
-        name: 'Banana',
-        unit: 'Doz',
-        price: 10,
-        image: 'assets/images/banana.png'),
+      productId: 3,
+      name: 'Banana',
+      unit: 'Doz',
+      price: 10,
+      image: 'assets/images/banana.png',
+    ),
     Item(
+        productId: 4,
         name: 'Grapes',
         unit: 'Kg',
         price: 8,
         image: 'assets/images/grapes.png'),
     Item(
-        name: 'Water Melon',
-        unit: 'Kg',
-        price: 25,
-        image: 'assets/images/watermelon.png'),
-    Item(name: 'Kiwi', unit: 'Pc', price: 40, image: 'assets/images/kiwi.png'),
+      productId: 5,
+      name: 'Water Melon',
+      unit: 'Kg',
+      price: 25,
+      image: 'assets/images/watermelon.png',
+    ),
     Item(
+      productId: 6,
+      name: 'Kiwi',
+      unit: 'Pc',
+      price: 40,
+      image: 'assets/images/kiwi.png',
+    ),
+    Item(
+        productId: 7,
         name: 'Orange',
         unit: 'Doz',
         price: 15,
         image: 'assets/images/orange.png'),
-    Item(name: 'Peach', unit: 'Pc', price: 8, image: 'assets/images/peach.png'),
-    Item(
-        name: 'Strawberry',
-        unit: 'Box',
-        price: 12,
-        image: 'assets/images/strawberry.png'),
-    Item(
-        name: 'Fruit Basket',
-        unit: 'Kg',
-        price: 55,
-        image: 'assets/images/fruitBasket.png'),
   ];
 
-  //List<bool> clicked = List.generate(10, (index) => false, growable: true);
   @override
   Widget build(BuildContext context) {
     final cart = Provider.of<CartProvider>(context);
     void saveData(int index) {
       dbHelper
-          .insert(
+          .addToCart(
         Cart(
           id: index,
-          productId: index.toString(),
+          productId: products[index].productId.toString(),
           productName: products[index].name,
           initialPrice: products[index].price,
           productPrice: products[index].price,
@@ -80,18 +89,22 @@ class _ProductListState extends State<ProductList> {
           .then((value) {
         cart.addTotalPrice(products[index].price.toDouble());
         cart.addCounter();
-        print('Product Added to cart');
       }).onError((error, stackTrace) {
-        print(error.toString());
+        log("Error here");
+        log('$error');
+        log(error.toString());
       });
     }
 
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Product List'),
+        title: Text(
+          'Product List',
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
         actions: [
-          Badge(
+          badge.Badge(
             badgeContent: Consumer<CartProvider>(
               builder: (context, value, child) {
                 return Text(
@@ -101,7 +114,7 @@ class _ProductListState extends State<ProductList> {
                 );
               },
             ),
-            position: const BadgePosition(start: 30, bottom: 30),
+            position: badge.BadgePosition.custom(start: 30, bottom: 30),
             child: IconButton(
               onPressed: () {
                 Navigator.push(
@@ -157,7 +170,8 @@ class _ProductListState extends State<ProductList> {
                                       text:
                                           '${products[index].name.toString()}\n',
                                       style: const TextStyle(
-                                          fontWeight: FontWeight.bold)),
+                                        fontWeight: FontWeight.bold,
+                                      )),
                                 ]),
                           ),
                           RichText(
@@ -195,7 +209,8 @@ class _ProductListState extends State<ProductList> {
                     ),
                     ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                            primary: Colors.blueGrey.shade900),
+                            //   primary: Colors.blueGrey.shade900,
+                            ),
                         onPressed: () {
                           saveData(index);
                         },

@@ -1,7 +1,8 @@
+import 'package:chapasdk/features/native-checkout/chapa_native_payment.dart';
 import 'package:flutter/material.dart';
-import 'constants/common.dart';
-import 'constants/requests.dart';
-import 'constants/strings.dart';
+import 'package:chapasdk/domain/constants/common.dart';
+import 'package:chapasdk/domain/constants/requests.dart';
+import 'package:chapasdk/domain/constants/strings.dart';
 
 class Chapa {
   BuildContext context;
@@ -16,6 +17,12 @@ class Chapa {
   String title;
   String desc;
   String namedRouteFallBack;
+  bool nativeCheckout;
+
+  final Color? buttonColor;
+
+  final bool? showPaymentMethodsOnGridView;
+  List<String>? availablePaymentMethods;
 
   Chapa.paymentParameters({
     required this.context,
@@ -30,11 +37,15 @@ class Chapa {
     required this.title,
     required this.desc,
     required this.namedRouteFallBack,
+    this.nativeCheckout = false,
+    this.buttonColor,
+    this.showPaymentMethodsOnGridView,
+    this.availablePaymentMethods,
   }) {
     _validateKeys();
     currency = currency.toUpperCase();
     if (_validateKeys()) {
-      initatePayment();
+      initiatePayment();
     }
   }
 
@@ -60,8 +71,44 @@ class Chapa {
     return true;
   }
 
-  void initatePayment() async {
-    intilizeMyPayment(context, publicKey, email, phone, amount, currency,
-        firstName, lastName, txRef, title, desc, namedRouteFallBack);
+  void initiatePayment() async {
+    if (nativeCheckout) {
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChapaNativePayment(
+              context: context,
+              publicKey: publicKey,
+              currency: currency,
+              firstName: firstName,
+              lastName: lastName,
+              amount: amount,
+              email: email,
+              phone: phone,
+              namedRouteFallBack: namedRouteFallBack,
+              title: title,
+              desc: desc,
+              txRef: txRef,
+              buttonColor: buttonColor,
+              showPaymentMethodsOnGridView: showPaymentMethodsOnGridView,
+              availablePaymentMethods: availablePaymentMethods ?? [],
+            ),
+          ));
+    } else {
+      await initializeMyPayment(
+        context,
+        email,
+        phone,
+        amount,
+        currency,
+        firstName,
+        lastName,
+        txRef,
+        title,
+        desc,
+        namedRouteFallBack,
+        publicKey,
+      );
+    }
   }
 }

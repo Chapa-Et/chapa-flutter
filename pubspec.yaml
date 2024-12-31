@@ -1,22 +1,38 @@
 name: chapasdk
-description: Chapa flutter library to accept payment via Card, PayPal, Amole, CBEBirr, AwashBirr and/or telebirr etc.
+description: Chapa flutter library to accept payment via telebirr, CBEBirr, E-birr and m-pessa etc.
 version: 0.0.6
 homepage: https://github.com/chapa-et/chapa-flutter
 
 environment:
-  sdk: ">=2.15.0<3.0.0"
-  flutter: ">=1.17.0"
+ sdk: '>=3.4.1 <4.0.0'
+ flutter: ">=3.4.1"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  http: ^0.13.0
-  flutter_inappwebview: ^5.4.3+7
-  connectivity_plus: ^2.3.6+1
-  fluttertoast: ^8.0.9
+  http: 
+  flutter_inappwebview: 
+  connectivity_plus: 
+  fluttertoast: 
+  dio:
+  encrypt:
+  pointycastle:
+  bloc: 
+  intl: 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.0
+  flutter_lints:
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/cbebirr.png
+    - assets/images/ebirr.png
+    - assets/images/telebirr.png
+    - assets/images/ethiopia-flag.png
+    - assets/images/mpesa.png
+    - assets/images/success-icon.png
+    - assets/images/chapa-logo.png
