@@ -21,3 +21,9 @@
 ## 0.0.6 
 
 * Update payload to accept `phone_number` and remove required validation from optional parameters.
+
+## 0.0.7
+
+* Add Native UI Support for Android and iOS
+* Improve payment flow with native implementation of webview
+* Use public key for web checkout instead of secret key for better security
