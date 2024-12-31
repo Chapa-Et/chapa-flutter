@@ -819,7 +819,7 @@ class _PaymentMethodsCustomBuilderViewState
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).shadowColor.withOpacity(0.05),
+                  color: Theme.of(context).shadowColor.withAlpha(128), // 50% opacity You can change it to .withOpacity(0.05) just remember .withOpacity(0.05) is deprecated
                   blurRadius: 2,
                   spreadRadius: 2.0,
                   offset: Offset(0, 4), // Controls the position of the shadow
