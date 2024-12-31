@@ -27,3 +27,8 @@
 * Add Native UI Support for Android and iOS
 * Improve payment flow with native implementation of webview
 * Use public key for web checkout instead of secret key for better security
+
+## 0.0.7+1
+
+* Update Assets from CDN
+* Update dependencies
