@@ -6,28 +6,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:chapasdk/domain/constants/common.dart';
 
+/// A widget for displaying the Chapa Web Checkout process in a web view.
+
 // ignore: must_be_immutable
 class ChapaWebView extends StatefulWidget {
+  /// The Checkout URL to be loaded in the web view.
   final String url;
+
+  /// The fallback route name to navigate to when exiting the payment page.
   final String fallBackNamedUrl;
+
+  /// The reference ID for the current transaction.s
   final String transactionReference;
+
+  /// The amount paid for the transaction.
   final String amountPaid;
+
+  /// A callback triggered when the payment process is finished if the fallBackNamedUrl is Empty .
+  ///
+  /// The callback parameters are:
+  /// - `String`: Payment status.
+  /// - `String`: Transaction reference.
+  /// - `String`: Amount paid.
   Function(String, String, String)? onPaymentFinished;
 
-  //ttx
-  //amount
-  //description
-  //
-
   // ignore: use_super_parameters
-  ChapaWebView(
-      {Key? key,
-      required this.url,
-      required this.fallBackNamedUrl,
-      required this.transactionReference,
-      required this.amountPaid,
-      this.onPaymentFinished})
-      : super(key: key);
+  ChapaWebView({
+    Key? key,
+    required this.url,
+    required this.fallBackNamedUrl,
+    required this.transactionReference,
+    required this.amountPaid,
+    this.onPaymentFinished,
+  }) : super(key: key);
 
   @override
   State<ChapaWebView> createState() => _ChapaWebViewState();
@@ -77,6 +88,13 @@ class _ChapaWebViewState extends State<ChapaWebView> {
     }
   }
 
+  /// Exits the payment page and triggers navigation or the callback.
+  ///
+  /// If [fallBackNamedUrl] is empty, the [onPaymentFinished] callback is called
+  /// with the payment message, transaction reference, and amount paid.
+  /// Otherwise, navigates to the fallback route.
+  ///
+  /// [message]: The message describing the payment status.
   exitPaymentPage(String message) {
     if (!mounted) return;
     if (widget.fallBackNamedUrl.isEmpty) {

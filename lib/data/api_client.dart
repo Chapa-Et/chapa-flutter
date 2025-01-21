@@ -8,35 +8,89 @@ import 'package:chapasdk/data/model/network_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 
+/// A client for making network requests with built-in error handling and
+/// support for various request types.
+///
+/// This class uses Custom Dio Client for HTTP requests and supports functionalities such
+/// as adding authorization headers, including default parameters, and
+/// transforming responses using custom serializers.
 class ApiClient {
+  /// The Custom Dio client for making HTTP requests.
   late DioClient dioClient;
+
+  /// The underlying Dio instance for configuration and advanced use cases.
   final Dio dio;
+
+  /// Provides network connectivity status.
   final Connectivity connectivity;
+
+  /// Default parameters to include in every request.
+  ///
+  /// These parameters are automatically appended to the request body
+  /// when [requiresDefaultParams] is true in the [request] method.
   Map<String, dynamic> defaultParams = {};
 
+  /// Creates an instance of [ApiClient].
+  ///
+  /// Requires a [dio] instance for HTTP requests and a [connectivity] instance
+  /// for monitoring network status.
   ApiClient({
     required this.dio,
     required this.connectivity,
   }) {
     dioClient = DioClient(dio, connectivity: connectivity);
   }
-  Future<NetworkResponse> request<T, U>(
-      {required RequestType requestType,
-      bool requiresAuth = true,
-      bool requiresDefaultParams = true,
-      required String path,
-      Map<String, dynamic>? queryParameters,
-      Map<String, dynamic>? data,
-      Map<String, dynamic>? headers,
-      bool isBodyJsonToString = false,
-      String jsonToStringBody = "",
-      required T Function(Map<String, dynamic>) fromJsonSuccess,
-      required U Function(Map<String, dynamic>, int) fromJsonError,
-      required String publicKey}) async {
+
+  /// Sends an HTTP request and handles the response.
+  ///
+  /// Supports GET, POST, PATCH, DELETE, and PUT request types, with options
+  /// for adding authorization headers, default parameters, and custom
+  /// serialization for success and error responses.
+
+  Future<NetworkResponse> request<T, U>({
+    /// - [requestType]: The type of HTTP request (e.g., GET, POST From Enum Value).
+    required RequestType requestType,
+
+    /// - [requiresAuth]: Whether the request requires an authorization header or not.
+    bool requiresAuth = true,
+
+    /// - [requiresDefaultParams]: Whether to include [defaultParams] in the request body.
+    bool requiresDefaultParams = true,
+
+    /// - [path]: The endpoint path for the request.
+    required String path,
+
+    /// - [queryParameters]: Optional query parameters.
+    Map<String, dynamic>? queryParameters,
+
+    /// - [data]: Optional request body.
+    Map<String, dynamic>? data,
+
+    /// - [headers]: Optional additional headers.
+    Map<String, dynamic>? headers,
+
+    /// - [isBodyJsonToString]: Whether to encode the body as a JSON string.
+    bool isBodyJsonToString = false,
+
+    /// - [jsonToStringBody]: The pre-encoded JSON string body, used if [isBodyJsonToString] is true.
+    String jsonToStringBody = "",
+
+    /// - [fromJsonSuccess]: A custom function to parse the success response into a model.
+    required T Function(Map<String, dynamic>) fromJsonSuccess,
+
+    /// - [fromJsonError]: A function to parse the error response into a model.
+    required U Function(Map<String, dynamic>, int) fromJsonError,
+
+    /// - [publicKey]: The public key for merchant authorization,
+    required String publicKey,
+  }) async {
     try {
+      // Add authorization header if required.
       if (requiresAuth) {
         await dioClient.addAuthorizationInterceptor(publicKey);
       }
+
+      // Include default parameters if applicable.
       if (requiresDefaultParams && data != null) {
         data = Map<String, dynamic>.from(data);
         data.addAll(defaultParams);
@@ -45,6 +99,8 @@ class ApiClient {
       Options? options;
 
       dynamic response;
+
+      // Execute the request based on the specified type.
       switch (requestType) {
         case RequestType.get:
           response = await dioClient.get(path,
@@ -115,7 +171,7 @@ class ApiClient {
           default:
             return UnknownError(error: e);
         }
-      } catch (exeption) {
+      } catch (exception) {
         return ApiError(error: e.response!.data, code: e.response!.statusCode!);
       }
     } catch (e) {

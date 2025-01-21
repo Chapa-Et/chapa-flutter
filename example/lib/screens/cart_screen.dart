@@ -29,10 +29,10 @@ class _CartScreenState extends State<CartScreen> {
       setState(() {
         if (ModalRoute.of(context)?.settings.arguments != null) {
           args = ModalRoute.of(context)?.settings.arguments;
-          print('message after payment');
-          print(args['message']);
-          print(args['transactionReference']);
-          print(args['paidAmount']);
+          debugPrint('message after payment');
+          debugPrint(args['message']);
+          debugPrint(args['transactionReference']);
+          debugPrint(args['paidAmount']);
         }
       });
     });
@@ -286,8 +286,8 @@ class _CartScreenState extends State<CartScreen> {
                   txRef: transactionRef,
                   title: 'Test Payment',
                   desc: 'Text Payment',
-                  nativeCheckout: false,
-                  namedRouteFallBack: "/",
+                  nativeCheckout: true,
+                  namedRouteFallBack: "",
                   showPaymentMethodsOnGridView: false,
                   availablePaymentMethods: [
                     'mpesa',

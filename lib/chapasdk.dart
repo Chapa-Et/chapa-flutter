@@ -1,3 +1,3 @@
 library chapasdk;
 
-export './chapa_payment initializer.dart';
+export './chapa_payment_initializer.dart';
