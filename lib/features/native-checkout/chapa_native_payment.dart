@@ -34,6 +34,7 @@ class ChapaNativePayment extends StatefulWidget {
   final Color? buttonColor;
   final bool? showPaymentMethodsOnGridView;
   List<String> availablePaymentMethods;
+  Function(String, String, String)? onPaymentFinished;
 
   ChapaNativePayment({
     super.key,
@@ -57,6 +58,7 @@ class ChapaNativePayment extends StatefulWidget {
       "ebirr",
       "mpesa",
     ],
+    this.onPaymentFinished,
   });
 
   @override
@@ -105,17 +107,28 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
     super.dispose();
   }
 
-  exitPaymentPage(String message, String? chapaTransactionRef) {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      widget.namedRouteFallBack,
-      (Route<dynamic> route) => false,
-      arguments: {
-        'message': message,
-        'transactionReference': chapaTransactionRef ?? widget.txRef,
-        'paidAmount': widget.amount
-      },
-    );
+  exitPaymentPage(
+    String message,
+    String? chapaTransactionRef,
+  ) {
+    if (widget.namedRouteFallBack.isEmpty) {
+      widget.onPaymentFinished!(
+        message,
+        chapaTransactionRef ?? widget.txRef,
+        widget.amount,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.namedRouteFallBack,
+        (Route<dynamic> route) => false,
+        arguments: {
+          'message': message,
+          'transactionReference': chapaTransactionRef ?? widget.txRef,
+          'paidAmount': widget.amount
+        },
+      );
+    }
   }
 
   Future<void> _showProcessingDialog() async {
@@ -361,6 +374,7 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                         widget.desc,
                         widget.namedRouteFallBack,
                         widget.publicKey,
+                        widget.onPaymentFinished,
                       ).then((String result) {
                         if (result.isNotEmpty) {
                           setState(() {
@@ -819,7 +833,7 @@ class _PaymentMethodsCustomBuilderViewState
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).shadowColor.withAlpha(24), 
+                  color: Theme.of(context).shadowColor.withAlpha(24),
                   blurRadius: 2,
                   spreadRadius: 2.0,
                   offset: Offset(0, 4), // Controls the position of the shadow

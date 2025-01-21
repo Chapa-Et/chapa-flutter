@@ -286,8 +286,8 @@ class _CartScreenState extends State<CartScreen> {
                   txRef: transactionRef,
                   title: 'Test Payment',
                   desc: 'Text Payment',
-                  nativeCheckout: true,
-                  namedRouteFallBack: '/',
+                  nativeCheckout: false,
+                  namedRouteFallBack: "/",
                   showPaymentMethodsOnGridView: false,
                   availablePaymentMethods: [
                     'mpesa',
@@ -295,6 +295,9 @@ class _CartScreenState extends State<CartScreen> {
                     'telebirr',
                     'ebirr',
                   ],
+                  onPaymentFinished: (message, reference, amount) {
+                    Navigator.pop(context);
+                  },
                 );
               },
               child: Text(

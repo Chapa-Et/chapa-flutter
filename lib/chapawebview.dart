@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:chapasdk/domain/constants/common.dart';
 
+// ignore: must_be_immutable
 class ChapaWebView extends StatefulWidget {
   final String url;
   final String fallBackNamedUrl;
   final String transactionReference;
   final String amountPaid;
+  Function(String, String, String)? onPaymentFinished;
 
   //ttx
   //amount
@@ -18,12 +20,13 @@ class ChapaWebView extends StatefulWidget {
   //
 
   // ignore: use_super_parameters
-  const ChapaWebView(
+  ChapaWebView(
       {Key? key,
       required this.url,
       required this.fallBackNamedUrl,
       required this.transactionReference,
-      required this.amountPaid})
+      required this.amountPaid,
+      this.onPaymentFinished})
       : super(key: key);
 
   @override
@@ -76,16 +79,24 @@ class _ChapaWebViewState extends State<ChapaWebView> {
 
   exitPaymentPage(String message) {
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      widget.fallBackNamedUrl,
-      (Route<dynamic> route) => false,
-      arguments: {
-        'message': message,
-        'transactionReference': widget.transactionReference,
-        'paidAmount': widget.amountPaid
-      },
-    );
+    if (widget.fallBackNamedUrl.isEmpty) {
+      widget.onPaymentFinished!(
+        message,
+        widget.transactionReference,
+        widget.amountPaid,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.fallBackNamedUrl,
+        (Route<dynamic> route) => false,
+        arguments: {
+          'message': message,
+          'transactionReference': widget.transactionReference,
+          'paidAmount': widget.amountPaid
+        },
+      );
+    }
   }
 
   @override

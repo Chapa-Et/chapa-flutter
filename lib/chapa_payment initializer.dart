@@ -24,6 +24,8 @@ class Chapa {
   final bool? showPaymentMethodsOnGridView;
   List<String>? availablePaymentMethods;
 
+  Function(String,String,String)? onPaymentFinished;
+
   Chapa.paymentParameters({
     required this.context,
     required this.publicKey,
@@ -41,6 +43,8 @@ class Chapa {
     this.buttonColor,
     this.showPaymentMethodsOnGridView,
     this.availablePaymentMethods,
+    this.onPaymentFinished,
+  
   }) {
     _validateKeys();
     currency = currency.toUpperCase();
@@ -92,6 +96,7 @@ class Chapa {
               buttonColor: buttonColor,
               showPaymentMethodsOnGridView: showPaymentMethodsOnGridView,
               availablePaymentMethods: availablePaymentMethods ?? [],
+              onPaymentFinished: onPaymentFinished,
             ),
           ));
     } else {
@@ -108,6 +113,7 @@ class Chapa {
         desc,
         namedRouteFallBack,
         publicKey,
+        onPaymentFinished
       );
     }
   }
