@@ -50,26 +50,26 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   void checkConnectivity() async {
     connection = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) {
+        .listen((List<ConnectivityResult> result) {
       handleConnectivityChange(result);
     });
   }
 
-  void handleConnectivityChange(ConnectivityResult result) {
+  void handleConnectivityChange(List<ConnectivityResult> result) {
     if (result == ConnectivityResult.none) {
       setState(() {
         isOffline = true;
       });
       showErrorToast(ChapaStrings.connectionError);
       exitPaymentPage(ChapaStrings.connectionError);
-    } else if (result == ConnectivityResult.mobile ||
-        result == ConnectivityResult.wifi ||
-        result == ConnectivityResult.ethernet ||
-        result == ConnectivityResult.vpn) {
+    } else if (result.contains(ConnectivityResult.mobile) ||
+        result.contains(ConnectivityResult.wifi) ||
+        result.contains(ConnectivityResult.ethernet) ||
+        result.contains(ConnectivityResult.vpn)) {
       setState(() {
         isOffline = false;
       });
-    } else if (result == ConnectivityResult.bluetooth) {
+    } else if (result.contains(ConnectivityResult.bluetooth)) {
       setState(() {
         isOffline = false;
       });

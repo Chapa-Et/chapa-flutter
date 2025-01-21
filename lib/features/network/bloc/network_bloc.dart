@@ -15,11 +15,11 @@ class NetworkBloc extends Bloc<NetworkEvent, NetworkState> {
     });
     subscription = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult connectivityResult) {
-      if (connectivityResult == ConnectivityResult.mobile ||
-          connectivityResult == ConnectivityResult.wifi ||
-          connectivityResult == ConnectivityResult.ethernet ||
-          connectivityResult == ConnectivityResult.vpn) {
+        .listen((List<ConnectivityResult> connectivityResult) {
+      if (connectivityResult.contains(ConnectivityResult.mobile) ||
+          connectivityResult.contains(ConnectivityResult.wifi) ||
+          connectivityResult.contains(ConnectivityResult.ethernet) ||
+          connectivityResult.contains(ConnectivityResult.vpn)) {
         add(OnNetworkConnected());
       } else {
         add(OnNetworkNotConnected());
