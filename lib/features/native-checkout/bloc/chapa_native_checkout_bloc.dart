@@ -12,9 +12,19 @@ import 'package:meta/meta.dart';
 part 'chapa_native_checkout_event.dart';
 part 'chapa_native_checkout_state.dart';
 
+/// The ChapaNativeCheckoutBloc handles the logic for processing payments
+/// through the Chapa SDK. It listens for events like payment initiation and
+/// validation, and updates the state of the payment process accordingly.
 class ChapaNativeCheckoutBloc
     extends Bloc<ChapaNativeCheckoutEvent, ChapaNativeCheckoutState> {
+  /// The payment service used to interact with the Chapa API for payment
+  /// initialization and verification.
   PaymentService paymentService;
+
+  /// Constructor for ChapaNativeCheckoutBloc.
+  ///
+  /// [paymentService]: A required instance of [PaymentService] to handle
+  /// payment-related operations like initiating and verifying payments.
   ChapaNativeCheckoutBloc({required this.paymentService})
       : super(ChapaNativeCheckoutInitial()) {
     on<ChapaNativeCheckoutEvent>((event, emit) {

@@ -42,7 +42,7 @@ class Chapa {
   /// Payment description
   String desc;
 
-  /// The fallback named route in case of navigation issues.
+  /// The fallback named route after the payment is made.
   String namedRouteFallBack;
 
   /// The boolean values which Indicates whether to use the native checkout or web

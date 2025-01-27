@@ -17,25 +17,58 @@ import 'package:chapasdk/features/network/bloc/network_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// A widget for performing Chapa native payment checkout.
 // ignore: must_be_immutable
 class ChapaNativePayment extends StatefulWidget {
+  /// BuildContext
   final BuildContext context;
+
+  /// The public API key from Chapa for processing payments for Authenticating Merchant.
   final String publicKey;
+
+  /// The email of the customer making the payment.
   final String email;
+
+  /// The phone number of the customer making the payment.
   final String phone;
+
+  /// The payment amount to be charged.
   final String amount;
+
+  /// The currency for the payment, e.g., "ETB".
   final String currency;
+
+  /// The first name of the customer.
   final String firstName;
+
+  /// The last name of the customer.
   final String lastName;
+
+  ///The unique transaction reference for the payment.
   final String txRef;
+
+  ///The title of the payment.
   final String title;
+
+  /// The description of the payment request.
   final String desc;
+
+  ///The route to navigate after payment is made.
   final String namedRouteFallBack;
+
+  /// Custom button color for the checkout.
   final Color? buttonColor;
+
+  /// Option to show payment methods in a grid view.
   final bool? showPaymentMethodsOnGridView;
+
+  /// List of available payment methods. If null, all methods are enabled.
   List<String> availablePaymentMethods;
+
+  /// Return the transaction status, reference, and response as arguments.
   Function(String, String, String)? onPaymentFinished;
 
+  /// Constructor
   ChapaNativePayment({
     super.key,
     required this.context,
@@ -745,12 +778,22 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
   }
 }
 
+/// A custom widget for displaying payment methods in a grid or horizontal list.
 // ignore: must_be_immutable
 class PaymentMethodsCustomBuilderView extends StatefulWidget {
+  /// A flag to determine whether the payment methods
   final bool? showPaymentMethodsOnGridView;
+
+  /// A list of available payment methods to be displayed.
   final List<LocalPaymentMethods> availablePaymentMethods;
+
+  /// The currently selected payment method. Used to highlight
   LocalPaymentMethods? selectedPaymentMethod;
+
+  /// A callback function that is triggered when a payment method is selected
   Function(LocalPaymentMethods) onPressed;
+
+  /// Constructor
   PaymentMethodsCustomBuilderView({
     super.key,
     required this.showPaymentMethodsOnGridView,
