@@ -40,8 +40,13 @@ Future<String> initializeMyPayment(
       },
     );
     if (response.statusCode == 400) {
-      var jsonResponse = json.decode(response.body);
-      showToast(jsonResponse);
+      ApiErrorResponse apiErrorResponse = ApiErrorResponse.fromJson(
+          json.decode(response.body), response.statusCode);
+      showToast({
+        'message': apiErrorResponse.message ??
+            "Something went wrong. Please Contact Us.",
+      });
+
       return '';
     } else if (response.statusCode == 302) {
       String? redirectUrl = response.headers['location'];
@@ -79,6 +84,7 @@ Future<String> initializeMyPayment(
     });
     return '';
   } catch (e) {
+    print(e);
     log(e.toString());
     log("Exception here");
     return '';

@@ -10,8 +10,8 @@ import 'package:chapasdk/chapasdk.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -20,6 +20,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   DBHelper? dbHelper = DBHelper();
   List<bool> tapped = [];
+  // ignore: prefer_typing_uninitialized_variables
   var args;
 
   @override
@@ -274,30 +275,52 @@ class _CartScreenState extends State<CartScreen> {
                 ///
                 ///
                 ///
+                ///
+                // Chapa.paymentParameters(
+                //   context: context, // context
+                //   publicKey: 'CHAPUBK_TEST-KOICO6UfAQxcqGIdOwANL9Aex5nbBK2l',
+                //   currency: 'ETB',
+                //   amount: '1',
+                //   email: 'fetan@chapa.co',
+                //   phone: '0900123456',
+                //   firstName: 'Israel',
+                //   nativeCheckout: true,
+                //   lastName: 'Goytom',
+                //   txRef: transactionRef,
+                //   title: 'Test Payment',
+                //   desc: 'Text Payment',
+                //   namedRouteFallBack: "",
+                //   showPaymentMethodsOnGridView: false,
+                //   availablePaymentMethods: [
+                //     'mpesa',
+                //     'cbebirr',
+                //     'telebirr',
+                //     'ebirr',
+                //   ],
+                //   onPaymentFinished: (message, reference, amount) {
+                //     Navigator.pop(context);
+                //   },
+                // );
                 Chapa.paymentParameters(
-                  context: context, // context
-                  publicKey: 'CHAPUBK-@@@',
+                  context: context,
+                  publicKey: 'CHAPUBK_TEST-KOICO6UfAQxcqGIdOwANL9Aex5nbBK2l',
                   currency: 'ETB',
                   amount: '1',
-                  email: 'fetan@chapa.co',
-                  phone: '0964001822',
-                  firstName: 'Israel',
-                  lastName: 'Goytom',
+                  email: 'ermiasmesfin123@gmail.com',
+                  phone: '0900123456',
+                  firstName: 'ermias',
+                  lastName: 'mesfin',
                   txRef: transactionRef,
                   title: 'Test Payment',
-                  desc: 'Text Payment',
-                  nativeCheckout: true,
-                  namedRouteFallBack: "",
-                  showPaymentMethodsOnGridView: false,
+                  desc: 'Test CHAPUBK_TEST-KOICO6UfAQxcqGIdOwANL9Aex5nbBK2l',
+                  namedRouteFallBack: '/',
+                  showPaymentMethodsOnGridView: true,
                   availablePaymentMethods: [
                     'mpesa',
                     'cbebirr',
                     'telebirr',
                     'ebirr',
                   ],
-                  onPaymentFinished: (message, reference, amount) {
-                    Navigator.pop(context);
-                  },
                 );
               },
               child: Text(

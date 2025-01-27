@@ -30,7 +30,8 @@ class ChapaWebView extends StatefulWidget {
   /// - `String`: Amount paid.
   Function(String, String, String)? onPaymentFinished;
 
-  // ignore: use_super_parameters
+  ///Constructor for [ChapaWebView]
+  /// ignore: use_super_parameters
   ChapaWebView({
     Key? key,
     required this.url,

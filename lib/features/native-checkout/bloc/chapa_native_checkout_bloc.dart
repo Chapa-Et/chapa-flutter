@@ -3,7 +3,7 @@ import 'package:chapasdk/data/model/initiate_payment.dart';
 import 'package:chapasdk/data/model/response/direct_charge_success_response.dart';
 import 'package:chapasdk/data/model/network_response.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
-import 'package:chapasdk/data/model/request/validate_directCharge_request.dart';
+import 'package:chapasdk/data/model/request/validate_direct_charge_request.dart';
 import 'package:chapasdk/data/model/response/api_error_response.dart';
 import 'package:chapasdk/data/model/response/verify_direct_charge_response.dart';
 import 'package:chapasdk/data/services/payment_service.dart';

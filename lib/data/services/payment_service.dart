@@ -5,7 +5,7 @@ import 'package:chapasdk/domain/constants/url.dart';
 import 'package:chapasdk/data/api_client.dart';
 import 'package:chapasdk/data/model/network_response.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
-import 'package:chapasdk/data/model/request/validate_directCharge_request.dart';
+import 'package:chapasdk/data/model/request/validate_direct_charge_request.dart';
 import 'package:chapasdk/data/model/response/api_error_response.dart';
 import 'package:chapasdk/data/model/response/verify_direct_charge_response.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';

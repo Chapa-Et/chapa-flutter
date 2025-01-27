@@ -1,21 +1,25 @@
 import 'dart:convert';
 import 'package:http/http.dart';
 
+/// Represents a structured response from an API request, including status code,
+/// message, body, and error information.
 class ApiResponse {
-  List get data => body["body"];
-  bool get allGood => errors!.isEmpty;
-  String get hasException => exception!;
-  bool hasError() => errors!.isNotEmpty;
-  bool hasMessageError() => messageError!.isNotEmpty;
-  bool hasData() => data.isNotEmpty;
-
+  /// HTTP status code of the API response.
   int? code;
-  String? message;
-  dynamic body;
-  List? errors;
-  List? messageError;
-  String? exception;
 
+  ///  Message for the API response.
+  String? message;
+
+  /// Dynamic body content of the API response.
+  dynamic body;
+
+  /// List of errors returned by the API, if any.
+  List? errors;
+
+  /// Creates an instance of [ApiResponse].
+  ///
+  /// The [code] and [message] parameters are required, while [body] and [errors]
+  /// are optional.
   ApiResponse({
     required this.code,
     required this.message,
@@ -23,80 +27,54 @@ class ApiResponse {
     this.errors,
   });
 
-  factory ApiResponse.fromResponse(
-    Response response,
-  ) {
+  /// Factory method to create an [ApiResponse] from an HTTP response object.
+  factory ApiResponse.fromResponse(Response response) {
     int code = response.statusCode;
     dynamic body = jsonDecode(response.body);
     List errors = [];
     String message = "";
-    List messageError = [];
 
     switch (code) {
       case 200:
-        try {
-          message = body is Map ? body['message'] : "";
-        } catch (error) {
-          messageError.add(message);
-        }
-
-        break;
       case 201:
         try {
-          message = body is Map ? body['message'] : "";
+          message = body is Map ? body['message'] ?? "" : "";
         } catch (error) {
-          messageError.add(message);
+          // Handle any error in reading message
+          message = "";
         }
         break;
       case 400:
         try {
           message = body is Map ? body['errors'][0]['message'] ?? "" : "";
-
           errors.add(message);
         } catch (error) {
-          message = body is Map ? body['message'] : "";
-
+          message = body is Map ? body['message'] ?? "" : "";
           errors.add(message);
         }
         break;
-
       case 401:
         try {
-          message =
-              body is Map ? body['message'] ?? "unauthorized" : "unauthorized";
+          message = body is Map ? body['message'] ?? "Unauthorized" : "Unauthorized";
           errors.add(message);
         } catch (error) {
-          // debugPrint("Message reading error in Error ==> $error");
-          errors.add(message);
+          errors.add("Unauthorized");
         }
         break;
       case 408:
-        try {
-          message =
-              "Looks like the server is taking to long to respond, please try again in sometime";
-          errors.add(message);
-        } catch (error) {
-          errors.add(message);
-        }
+        message = "Server timeout, please try again later.";
+        errors.add(message);
         break;
-
       case 429:
         try {
-          message = body is Map ? body['message'] ?? "" : "too many request";
+          message = body is Map ? body['message'] ?? "Too many requests" : "Too many requests";
           errors.add(message);
         } catch (error) {
-          errors.add(message);
+          errors.add("Too many requests");
         }
         break;
-
       default:
-        try {
-          message = body["message"] ??
-              "Sorry! Something went wrong, please contact support.";
-        } catch (e) {
-          message = "Sorry! Something went wrong, please contact support.";
-        }
-
+        message = body is Map ? body["message"] ?? "Something went wrong." : "Something went wrong.";
         break;
     }
 
@@ -108,6 +86,28 @@ class ApiResponse {
     );
   }
 
+  /// Getter for accessing the `data` part of the response body.
+  List get data => body["body"];
+
+  /// Checks if there are any errors in the API response.
+  bool hasError() => errors!.isNotEmpty;
+
+  /// Checks if there are any message errors in the API response.
+  bool hasMessageError() => message!.isNotEmpty;
+
+  /// Checks if the API response contains any data.
+  bool hasData() => data.isNotEmpty;
+
+  /// Checks if the API response indicates that everything is good.
+  bool get allGood => errors!.isEmpty;
+
+  /// Retrieves the exception message from the API response.
+  String get hasException => exception!;
+
+  /// Exception message placeholder, currently not in use.
+  String? exception;
+
+  /// Initializes an [ApiResponse] instance from a JSON map.
   ApiResponse.fromJson(Map<String, dynamic> json) {
     message = json['message'];
   }
