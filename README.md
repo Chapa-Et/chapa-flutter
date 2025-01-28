@@ -11,6 +11,14 @@ The official **Chapa Flutter SDK** enables Flutter developers to integrate Chapa
 - 🌐 **Web Checkout Support:** Enable users to use the web checkout for additional payment options.
 
 ---
+
+## **Requirement**
+
+To accept money with Chapa in real time, a Merchant should pass all the KYC process and must be in Live mode. 
+
+If you are a developer and testing how Chapa works, you can only test using test numbers: [Chapa's Test Numbers](https://developer.chapa.co/test/testing-mobile)
+
+---
 ## **Preview**
 
 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -75,7 +83,7 @@ flutter pub get
 | `showPaymentMethodsOnGridView` | `bool`       | No        | Display payment methods in grid (`true`) or horizontal view (`false`). Default is `true`.                     |
 | `availablePaymentMethods` | `List<String>`   | No        | List of allowed payment methods (`mpesa`, `cbebirr`, `telebirr`, `ebirr`). Defaults to all methods.           |
 | `buttonColor`             | `Color`          | No        | Button color for native checkout. Defaults to the app’s primary theme color.  
-| `onPaymentFinished`       | `Function`       | No        | A callback function executed when namedFallBackUrl is empty, typically used for custom navigation (e.g., AutoRoute).                                  |
+| `onPaymentFinished`       | `Function`       | No        | A callback function executed when namedFallBackUrl is empty, typically used for custom navigation (e.g., AutoRoute,GoRoute).                                  |
 
 ---
 
@@ -100,6 +108,9 @@ Chapa.paymentParameters(
   namedRouteFallBack: '/',
   showPaymentMethodsOnGridView: true,
   availablePaymentMethods: ['mpesa', 'cbebirr', 'telebirr', 'ebirr'],
+  onPaymentFinished: (message, reference, amount) {
+                    Navigator.pop(context);
+                  },
 );
 ```
 
