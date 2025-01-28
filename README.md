@@ -78,7 +78,7 @@ flutter pub get
 | `txRef`                   | `String`         | **Yes**   | Unique reference for the transaction.                                                                         |
 | `title`                   | `String`         | **Yes**   | Title of the payment modal.                                                                                   |
 | `desc`                    | `String`         | **Yes**   | Description of the payment.                                                                                   |
-| `namedRouteFallBack`      | `String`         | **Yes**   | Named route to redirect users to after payment events (success, failure, or cancellation).                    |
+| `namedRouteFallBack`      | `String`         | **Yes**   | Named route to redirect users to after payment events (success, failure, or cancellation). NB: If you are using GoRoute, AutoRoute, or any custom routing package, pass this value as an empty string `""` and make sure to pass a body to the `onPaymentFinished` function.                   |
 | `nativeCheckout`          | `bool`           | No        | Whether to use native checkout (`true`) or web checkout (`false`). Default is `true`.                         |
 | `showPaymentMethodsOnGridView` | `bool`       | No        | Display payment methods in grid (`true`) or horizontal view (`false`). Default is `true`.                     |
 | `availablePaymentMethods` | `List<String>`   | No        | List of allowed payment methods (`mpesa`, `cbebirr`, `telebirr`, `ebirr`). Defaults to all methods.           |
