@@ -268,8 +268,9 @@ class _CartScreenState extends State<CartScreen> {
 
                 const chars =
                     'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-                String transactionRef = List.generate(
-                    10, (index) => chars[r.nextInt(chars.length)]).join();
+                String transactionRef =
+                    List.generate(10, (index) => chars[r.nextInt(chars.length)])
+                        .join();
 
                 ///
                 ///
@@ -278,11 +279,11 @@ class _CartScreenState extends State<CartScreen> {
                 ///
                 Chapa.paymentParameters(
                   context: context, // context
-                  publicKey: 'CHAPUBK_TEST-KOICO6UfAQxcqGIdOwANL9Aex5nbBK2l',
+                  publicKey: 'CHAPUBK_@@@',
                   currency: 'ETB',
                   amount: '1',
                   email: 'fetan@chapa.co',
-                  phone: '0900123456',
+                  phone: '0964001822',
                   firstName: 'Israel',
                   nativeCheckout: true,
                   lastName: 'Goytom',
@@ -290,7 +291,7 @@ class _CartScreenState extends State<CartScreen> {
                   title: 'Test Payment',
                   desc: 'Text Payment',
                   namedRouteFallBack: "",
-                  showPaymentMethodsOnGridView: false,
+                  showPaymentMethodsOnGridView: true,
                   availablePaymentMethods: [
                     'mpesa',
                     'cbebirr',
@@ -301,7 +302,6 @@ class _CartScreenState extends State<CartScreen> {
                     Navigator.pop(context);
                   },
                 );
-                
               },
               child: Text(
                 'Proceed to Pay',

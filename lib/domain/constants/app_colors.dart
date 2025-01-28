@@ -12,6 +12,9 @@ class AppColors {
   /// Secondary color of the app, often used for complementary UI elements.
   static const Color chapaSecondaryColor = Color(0xff0D1B34);
 
-  /// Color used for shadows or subtle background highlights.
+  /// Color used for shadows or subtle background highlights for light theme.
   static const Color shadowColor = Color(0xfff6f6f6);
+
+  /// Color used for shadows or subtle background highlights for dark theme.
+  static const Color darkShadowColor = Color(0xff2E2E2E);
 }

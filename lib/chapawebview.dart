@@ -99,11 +99,13 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   exitPaymentPage(String message) {
     if (!mounted) return;
     if (widget.fallBackNamedUrl.isEmpty) {
-      widget.onPaymentFinished!(
-        message,
-        widget.transactionReference,
-        widget.amountPaid,
-      );
+      if (widget.onPaymentFinished != null) {
+        widget.onPaymentFinished!(
+          message,
+          widget.transactionReference,
+          widget.amountPaid,
+        );
+      }
     } else {
       Navigator.pushNamedAndRemoveUntil(
         context,
@@ -181,6 +183,11 @@ class _ChapaWebViewState extends State<ChapaWebView> {
 
                         return args.reduce((curr, next) => curr + next);
                       });
+                },
+                onProgressChanged: (controller, progress) {
+                  setState(() {
+                    this.progress = progress / 100;
+                  });
                 },
                 onUpdateVisitedHistory: (InAppWebViewController controller,
                     Uri? uri, androidIsReload) async {

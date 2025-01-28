@@ -11,34 +11,35 @@ final class ChapaNativeCheckoutInitial extends ChapaNativeCheckoutState {}
 final class ChapaNativeCheckoutLoadingState extends ChapaNativeCheckoutState {}
 
 /// State representing a successful payment initiation.
-/// 
+///
 /// Contains the response from the payment service after a successful
 /// initiation of a payment.
 final class ChapaNativeCheckoutPaymentInitiateSuccessState
     extends ChapaNativeCheckoutState {
-  
   /// The response received from the payment service after a successful payment initiation.
   final DirectChargeSuccessResponse directChargeSuccessResponse;
+
+  /// A flag indicating whether the payment initiate failed or not.
+  final bool isPaymentInitiateFailed;
 
   /// Constructor for the [ChapaNativeCheckoutPaymentInitiateSuccessState].
   ///
   /// [directChargeSuccessResponse]: The response object that contains the result of the payment initiation.
   ChapaNativeCheckoutPaymentInitiateSuccessState({
     required this.directChargeSuccessResponse,
+    required this.isPaymentInitiateFailed,
   });
 }
 
-
 /// State representing an error that occurred during the payment initiation.
-/// 
+///
 /// It can contain either an API error response or a direct charge API error response.
 // ignore: must_be_immutable
 final class ChapaNativeCheckoutPaymentInitiateApiError
     extends ChapaNativeCheckoutState {
-  
   /// The error response from the API (if any).
   ApiErrorResponse? apiErrorResponse;
-  
+
   /// The direct charge API error response (if any).
   DirectChargeApiError? directChargeApiError;
 
@@ -59,15 +60,14 @@ final class ChapaNativeCheckoutValidationOngoingState
     extends ChapaNativeCheckoutState {}
 
 /// State representing the success of payment validation.
-/// 
+///
 /// Contains the response from the validation service and a flag indicating
 /// whether the payment failed or not.
 final class ChapaNativeCheckoutPaymentValidateSuccessState
     extends ChapaNativeCheckoutState {
-  
   /// The response received from the payment validation service.
   final ValidateDirectChargeResponse directChargeValidateResponse;
-  
+
   /// A flag indicating whether the payment failed (true if failed, false otherwise).
   final bool isPaymentFailed;
 
@@ -82,12 +82,11 @@ final class ChapaNativeCheckoutPaymentValidateSuccessState
 }
 
 /// State representing an error that occurred during the payment validation.
-/// 
+///
 /// It contains the API error response (if any) from the validation request.
 // ignore: must_be_immutable
 final class ChapaNativeCheckoutPaymentValidateApiError
     extends ChapaNativeCheckoutState {
-  
   /// The error response from the API (if any).
   ApiErrorResponse? apiErrorResponse;
 

@@ -21,8 +21,12 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Flutter Demo',
-          theme: ThemeData(
-            primarySwatch: Colors.green,
+          theme: ThemeData.light().copyWith(
+            primaryColor: Colors.green,
+          ),
+          themeMode: ThemeMode.system,
+          darkTheme: ThemeData.dark().copyWith(
+            primaryColor: Colors.green,
           ),
           routes: {
             '/checkoutPage': (context) => const CartScreen(),

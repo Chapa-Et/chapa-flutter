@@ -53,6 +53,11 @@ class ChapaNativeCheckoutBloc
                   paymentMethod: event.directChargeRequest.paymentMethod),
               publicKey: event.publicKey,
             ));
+          } else {
+            emit(ChapaNativeCheckoutPaymentInitiateSuccessState(
+              directChargeSuccessResponse: directChargeSuccessResponse,
+              isPaymentInitiateFailed: true,
+            ));
           }
         } else if (networkResponse is ApiError) {
           try {

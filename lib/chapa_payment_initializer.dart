@@ -78,7 +78,7 @@ class Chapa {
     required this.title,
     required this.desc,
     required this.namedRouteFallBack,
-    this.nativeCheckout = false,
+    this.nativeCheckout = true,
     this.buttonColor,
     this.showPaymentMethodsOnGridView,
     this.availablePaymentMethods,

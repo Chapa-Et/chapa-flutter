@@ -97,6 +97,7 @@ Future<String> initializeMyPayment(
                     fallBackNamedUrl: fallBackNamedRoute,
                     transactionReference: transactionReference,
                     amountPaid: amount,
+                    onPaymentFinished: onPaymentFinished,
                   )),
         );
       }
