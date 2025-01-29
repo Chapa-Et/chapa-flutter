@@ -10,8 +10,8 @@ import 'package:chapasdk/chapasdk.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen({
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -20,6 +20,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   DBHelper? dbHelper = DBHelper();
   List<bool> tapped = [];
+  // ignore: prefer_typing_uninitialized_variables
   var args;
 
   @override
@@ -29,10 +30,10 @@ class _CartScreenState extends State<CartScreen> {
       setState(() {
         if (ModalRoute.of(context)?.settings.arguments != null) {
           args = ModalRoute.of(context)?.settings.arguments;
-          print('message after payment');
-          print(args['message']);
-          print(args['transactionReference']);
-          print(args['paidAmount']);
+          debugPrint('message after payment');
+          debugPrint(args['message']);
+          debugPrint(args['transactionReference']);
+          debugPrint(args['paidAmount']);
         }
       });
     });
@@ -265,36 +266,41 @@ class _CartScreenState extends State<CartScreen> {
               onPressed: () {
                 var r = Random();
 
-                const _chars =
+                const chars =
                     'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-                String transactionRef = List.generate(
-                    10, (index) => _chars[r.nextInt(_chars.length)]).join();
+                String transactionRef =
+                    List.generate(10, (index) => chars[r.nextInt(chars.length)])
+                        .join();
 
+                ///
                 ///
                 ///
                 ///
                 ///
                 Chapa.paymentParameters(
                   context: context, // context
-                  publicKey: 'CHAPUBK-@@@',
+                  publicKey: 'CHAPUBK_@@@',
                   currency: 'ETB',
                   amount: '1',
                   email: 'fetan@chapa.co',
                   phone: '0964001822',
                   firstName: 'Israel',
+                  nativeCheckout: true,
                   lastName: 'Goytom',
                   txRef: transactionRef,
                   title: 'Test Payment',
                   desc: 'Text Payment',
-                  nativeCheckout: true,
-                  namedRouteFallBack: '/',
-                  showPaymentMethodsOnGridView: false,
+                  namedRouteFallBack: "",
+                  showPaymentMethodsOnGridView: true,
                   availablePaymentMethods: [
                     'mpesa',
                     'cbebirr',
                     'telebirr',
                     'ebirr',
                   ],
+                  onPaymentFinished: (message, reference, amount) {
+                    Navigator.pop(context);
+                  },
                 );
               },
               child: Text(

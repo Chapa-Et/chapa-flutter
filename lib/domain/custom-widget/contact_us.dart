@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 
+/// A StatelessWidget that displays an error icon, a message, and a prompt
+/// for the user to contact support when something goes wrong in the app.
+///
+/// It is typically used when a critical error occurs and the user needs guidance
+
 class ContactUs extends StatelessWidget {
+  ///Constructor for [ContactUs]
   const ContactUs({super.key});
 
   @override

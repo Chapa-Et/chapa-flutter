@@ -1,26 +1,66 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 import 'package:chapasdk/chapawebview.dart';
+import 'package:chapasdk/data/model/response/api_error_response.dart';
 import 'package:chapasdk/domain/constants/url.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 
+/// Initializes a payment using the Chapa API.
+///
+/// This function sends a payment initialization request to the Chapa API, processes the
+/// response, and redirects the user to the Chapa payment page if successful.
+///
 
+/// Returns a `String` with the redirect URL, or an empty string if the payment initialization fails.
 Future<String> initializeMyPayment(
-    BuildContext context,
-    String email,
-    String phone,
-    String amount,
-    String currency,
-    String firstName,
-    String lastName,
-    String transactionReference,
-    String customTitle,
-    String customDescription,
-    String fallBackNamedRoute,
-    String publicKey) async {
+  /// [context] - The current `BuildContext` for navigation.
+  BuildContext context,
+
+  /// [customers] - The user's email address.
+  String email,
+
+  /// [phone] - The customers's phone number.
+  String phone,
+
+  /// [amount] - The amount to be paid.
+  String amount,
+
+  /// [currency] - The currency code (e.g., "ETB").
+
+  String currency,
+
+  /// [firstName] - The user's first name.
+  String firstName,
+
+  /// [lastName] - The customers's last name.
+  String lastName,
+
+  /// [transactionReference] - A unique reference for the transaction.
+
+  String transactionReference,
+
+  /// [customTitle] - Custom title for the payment.
+  String customTitle,
+
+  /// [customDescription] - Custom description for the payment.
+  String customDescription,
+
+  /// [fallBackNamedRoute] - Named route to navigate to if the payment is canceled or fails.
+
+  String fallBackNamedRoute,
+
+  /// [publicKey] - The public key for authentication for Merchant with the Chapa API.
+
+  String publicKey,
+
+  /// [onPaymentFinished] - Optional callback to execute when the payment is completed.
+  Function(String, String, String)? onPaymentFinished,
+) async {
   try {
     final http.Response response = await http.post(
       Uri.parse(ChapaUrl.chapaPay),
@@ -38,8 +78,13 @@ Future<String> initializeMyPayment(
       },
     );
     if (response.statusCode == 400) {
-      var jsonResponse = json.decode(response.body);
-      showToast(jsonResponse);
+      ApiErrorResponse apiErrorResponse = ApiErrorResponse.fromJson(
+          json.decode(response.body), response.statusCode);
+      showToast({
+        'message': apiErrorResponse.message ??
+            "Something went wrong. Please Contact Us.",
+      });
+
       return '';
     } else if (response.statusCode == 302) {
       String? redirectUrl = response.headers['location'];
@@ -52,14 +97,24 @@ Future<String> initializeMyPayment(
                     fallBackNamedUrl: fallBackNamedRoute,
                     transactionReference: transactionReference,
                     amountPaid: amount,
+                    onPaymentFinished: onPaymentFinished,
                   )),
         );
       }
       return redirectUrl.toString();
     } else {
-      log("Http Error");
-      log(response.body);
-      return '';
+      try {
+        ApiErrorResponse apiErrorResponse = ApiErrorResponse.fromJson(
+            json.decode(response.body), response.statusCode);
+        showToast({
+          'message': apiErrorResponse.message ??
+              "Something went wrong. Please Contact Us.",
+        });
+        log(response.body);
+        return '';
+      } catch (e) {
+        return '';
+      }
     }
   } on SocketException catch (_) {
     showToast({
@@ -73,6 +128,12 @@ Future<String> initializeMyPayment(
     return '';
   }
 }
+
+/// Displays a toast notification with the given message.
+///
+/// [message] - The message to display in the toast.
+///
+/// Returns a `Future<bool?>` that indicates whether the toast was successfully displayed.
 
 Future<bool?> showToast(jsonResponse) {
   return Fluttertoast.showToast(

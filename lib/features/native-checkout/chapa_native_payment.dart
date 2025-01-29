@@ -17,24 +17,58 @@ import 'package:chapasdk/features/network/bloc/network_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// A widget for performing Chapa native payment checkout.
 // ignore: must_be_immutable
 class ChapaNativePayment extends StatefulWidget {
+  /// BuildContext
   final BuildContext context;
+
+  /// The public API key from Chapa for processing payments for Authenticating Merchant.
   final String publicKey;
+
+  /// The email of the customer making the payment.
   final String email;
+
+  /// The phone number of the customer making the payment.
   final String phone;
+
+  /// The payment amount to be charged.
   final String amount;
+
+  /// The currency for the payment, e.g., "ETB".
   final String currency;
+
+  /// The first name of the customer.
   final String firstName;
+
+  /// The last name of the customer.
   final String lastName;
+
+  ///The unique transaction reference for the payment.
   final String txRef;
+
+  ///The title of the payment.
   final String title;
+
+  /// The description of the payment request.
   final String desc;
+
+  ///The route to navigate after payment is made.
   final String namedRouteFallBack;
+
+  /// Custom button color for the checkout.
   final Color? buttonColor;
+
+  /// Option to show payment methods in a grid view.
   final bool? showPaymentMethodsOnGridView;
+
+  /// List of available payment methods. If null, all methods are enabled.
   List<String> availablePaymentMethods;
 
+  /// Return the transaction status, reference, and response as arguments.
+  Function(String, String, String)? onPaymentFinished;
+
+  /// Constructor
   ChapaNativePayment({
     super.key,
     required this.context,
@@ -57,6 +91,7 @@ class ChapaNativePayment extends StatefulWidget {
       "ebirr",
       "mpesa",
     ],
+    this.onPaymentFinished,
   });
 
   @override
@@ -105,17 +140,28 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
     super.dispose();
   }
 
-  exitPaymentPage(String message, String? chapaTransactionRef) {
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      widget.namedRouteFallBack,
-      (Route<dynamic> route) => false,
-      arguments: {
-        'message': message,
-        'transactionReference': chapaTransactionRef ?? widget.txRef,
-        'paidAmount': widget.amount
-      },
-    );
+  exitPaymentPage(
+    String message,
+    String? chapaTransactionRef,
+  ) {
+    if (widget.namedRouteFallBack.isEmpty) {
+      widget.onPaymentFinished!(
+        message,
+        chapaTransactionRef ?? widget.txRef,
+        widget.amount,
+      );
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.namedRouteFallBack,
+        (Route<dynamic> route) => false,
+        arguments: {
+          'message': message,
+          'transactionReference': chapaTransactionRef ?? widget.txRef,
+          'paidAmount': widget.amount
+        },
+      );
+    }
   }
 
   Future<void> _showProcessingDialog() async {
@@ -215,6 +261,9 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
         (_) => _showProcessingDialog(),
       );
     }
+    if (state is ChapaNativeCheckoutPaymentInitiateSuccessState) {
+      return _buildPaymentInitiateSuccessError(state, deviceSize);
+    }
     if (state is ChapaNativeCheckoutPaymentValidateSuccessState) {
       WidgetsBinding.instance.addPostFrameCallback(
         (_) => _hideDialog(),
@@ -260,19 +309,17 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
               SizedBox(
                 height: deviceSize.height * 0.012,
               ),
-              Flexible(
-                child: PaymentMethodsCustomBuilderView(
-                  showPaymentMethodsOnGridView:
-                      widget.showPaymentMethodsOnGridView,
-                  availablePaymentMethods: paymentMethods,
-                  onPressed: (val) {
-                    setState(() {
-                      selectedLocalPaymentMethods = val;
-                      showPaymentMethodError = false;
-                    });
-                  },
-                  selectedPaymentMethod: selectedLocalPaymentMethods,
-                ),
+              PaymentMethodsCustomBuilderView(
+                showPaymentMethodsOnGridView:
+                    widget.showPaymentMethodsOnGridView,
+                availablePaymentMethods: paymentMethods,
+                onPressed: (val) {
+                  setState(() {
+                    selectedLocalPaymentMethods = val;
+                    showPaymentMethodError = false;
+                  });
+                },
+                selectedPaymentMethod: selectedLocalPaymentMethods,
               ),
               Visibility(
                 visible: showPaymentMethodError,
@@ -361,6 +408,7 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
                         widget.desc,
                         widget.namedRouteFallBack,
                         widget.publicKey,
+                        widget.onPaymentFinished,
                       ).then((String result) {
                         if (result.isNotEmpty) {
                           setState(() {
@@ -714,6 +762,69 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
     );
   }
 
+  Widget _buildPaymentInitiateSuccessError(
+      ChapaNativeCheckoutPaymentInitiateSuccessState? state, Size deviceSize) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: deviceSize.width * 0.08),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            height: deviceSize.height * 0.064,
+          ),
+          CircleAvatar(
+            backgroundColor: Colors.red,
+            radius: deviceSize.height * 0.028,
+            child: Icon(
+              Icons.close,
+              color: Theme.of(context).scaffoldBackgroundColor,
+            ),
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.016,
+          ),
+          Align(
+            alignment: Alignment.center,
+            child: Text(
+              state?.directChargeSuccessResponse.status?.toUpperCase() ??
+                  "Payment Failed",
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.red,
+                    fontWeight: FontWeight.w500,
+                  ),
+            ),
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.012,
+          ),
+          Text(
+            state?.directChargeSuccessResponse.data?.meta?.message ??
+                "Charge failed to initiate",
+            style: Theme.of(context).textTheme.bodyMedium,
+            textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            height: deviceSize.height * 0.04,
+          ),
+          SizedBox(
+            width: deviceSize.width * 0.64,
+            child: CustomButton(
+              backgroundColor: Colors.red,
+              onPressed: () {
+                exitPaymentPage(
+                  state?.directChargeSuccessResponse.data?.meta?.message ??
+                      "Charge failed to initiate",
+                  null,
+                );
+              },
+              title: "Retry Again",
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _buildPaymentValidateError(
       ChapaNativeCheckoutPaymentValidateApiError state) {
     return Center(
@@ -731,12 +842,22 @@ class _ChapaNativePaymentState extends State<ChapaNativePayment> {
   }
 }
 
+/// A custom widget for displaying payment methods in a grid or horizontal list.
 // ignore: must_be_immutable
 class PaymentMethodsCustomBuilderView extends StatefulWidget {
+  /// A flag to determine whether the payment methods
   final bool? showPaymentMethodsOnGridView;
+
+  /// A list of available payment methods to be displayed.
   final List<LocalPaymentMethods> availablePaymentMethods;
+
+  /// The currently selected payment method. Used to highlight
   LocalPaymentMethods? selectedPaymentMethod;
+
+  /// A callback function that is triggered when a payment method is selected
   Function(LocalPaymentMethods) onPressed;
+
+  /// Constructor
   PaymentMethodsCustomBuilderView({
     super.key,
     required this.showPaymentMethodsOnGridView,
@@ -757,31 +878,38 @@ class _PaymentMethodsCustomBuilderViewState
     Size deviceSize = MediaQuery.of(context).size;
     return widget.showPaymentMethodsOnGridView ?? true
         ? Container(
-            color: AppColors.shadowColor,
-            // padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-            child: GridView.count(
-              scrollDirection: Axis.vertical,
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              childAspectRatio: 1,
-              crossAxisSpacing: deviceSize.width * 0.02,
-              children: widget.availablePaymentMethods
-                  .map((method) => InkWell(
-                        onTap: () {
-                          widget.onPressed(method);
-                        },
-                        child: paymentMethodItem(method, deviceSize,
-                            method == widget.selectedPaymentMethod),
-                      ))
-                  .toList(),
+            width: deviceSize.width,
+            color: isDarkMode()
+                ? AppColors.darkShadowColor
+                : AppColors.shadowColor,
+            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Wrap(
+              spacing: 8.0,
+              runSpacing: 1.0,
+              alignment: WrapAlignment.start,
+              crossAxisAlignment: WrapCrossAlignment.end,
+              children: widget.availablePaymentMethods.map((method) {
+                return InkWell(
+                  onTap: () {
+                    widget.onPressed(method);
+                  },
+                  child: paymentMethodItem(
+                    method,
+                    deviceSize,
+                    method == widget.selectedPaymentMethod,
+                  ),
+                );
+              }).toList(),
             ),
           )
         : Container(
-            color: AppColors.shadowColor,
+            color: isDarkMode()
+                ? AppColors.darkShadowColor
+                : AppColors.shadowColor,
             padding: EdgeInsets.symmetric(
               horizontal: 8,
             ),
-            height: deviceSize.height * 0.132,
+            height: deviceSize.height * 0.16,
             child: ListView.builder(
               shrinkWrap: true,
               itemCount: widget.availablePaymentMethods.length,
@@ -803,23 +931,26 @@ class _PaymentMethodsCustomBuilderViewState
   Widget paymentMethodItem(
       LocalPaymentMethods paymentMethod, Size deviceSize, bool isSelected) {
     return Container(
-      margin: const EdgeInsets.only(right: 6, bottom: 6, top: 6, left: 6),
+      margin: const EdgeInsets.only(right: 6, left: 6),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: deviceSize.width * 0.24,
-            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            width: deviceSize.width * 0.22,
+            padding: EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 12,
+            ),
             decoration: BoxDecoration(
               border: Border.all(
                 color: isSelected ? Colors.green : Colors.transparent,
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(10),
               color: Theme.of(context).scaffoldBackgroundColor,
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).shadowColor.withAlpha(24), 
+                  color: Theme.of(context).shadowColor.withAlpha(24),
                   blurRadius: 2,
                   spreadRadius: 2.0,
                   offset: Offset(0, 4), // Controls the position of the shadow
@@ -827,9 +958,6 @@ class _PaymentMethodsCustomBuilderViewState
               ],
             ),
             child: Stack(
-              // crossAxisAlignment: CrossAxisAlignment.end,
-              // mainAxisAlignment: MainAxisAlignment.start,
-              // mainAxisSize: MainAxisSize.min,
               children: [
                 Positioned(
                   top: 0,
@@ -852,8 +980,8 @@ class _PaymentMethodsCustomBuilderViewState
                   margin: EdgeInsets.only(
                     top: 6,
                   ),
-                  width: deviceSize.width * 0.2,
-                  height: deviceSize.width * 0.08,
+                  width: deviceSize.width * 0.16,
+                  height: deviceSize.width * 0.072,
                   child: Image.asset(
                     paymentMethod.iconPath(),
                     fit: BoxFit.contain,
@@ -863,15 +991,25 @@ class _PaymentMethodsCustomBuilderViewState
             ),
           ),
           SizedBox(
-            height: 8,
+            height: 4,
           ),
           Text(
             paymentMethod.displayName(),
-            style: Theme.of(context).textTheme.labelSmall,
+            style: Theme.of(context)
+                .textTheme
+                .labelSmall!
+                .copyWith(fontSize: deviceSize.width * 0.028),
             textAlign: TextAlign.center,
+          ),
+          SizedBox(
+            height: 4,
           ),
         ],
       ),
     );
+  }
+
+  bool isDarkMode() {
+    return Theme.of(context).brightness == Brightness.dark;
   }
 }
