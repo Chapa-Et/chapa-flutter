@@ -6,25 +6,40 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:chapasdk/domain/constants/common.dart';
 
+/// A widget for displaying the Chapa Web Checkout process in a web view.
+
+// ignore: must_be_immutable
 class ChapaWebView extends StatefulWidget {
+  /// The Checkout URL to be loaded in the web view.
   final String url;
+
+  /// The fallback route name to navigate to when exiting the payment page.
   final String fallBackNamedUrl;
+
+  /// The reference ID for the current transaction.s
   final String transactionReference;
+
+  /// The amount paid for the transaction.
   final String amountPaid;
 
-  //ttx
-  //amount
-  //description
-  //
+  /// A callback triggered when the payment process is finished if the fallBackNamedUrl is Empty .
+  ///
+  /// The callback parameters are:
+  /// - `String`: Payment status.
+  /// - `String`: Transaction reference.
+  /// - `String`: Amount paid.
+  Function(String, String, String)? onPaymentFinished;
 
-  // ignore: use_super_parameters
-  const ChapaWebView(
-      {Key? key,
-      required this.url,
-      required this.fallBackNamedUrl,
-      required this.transactionReference,
-      required this.amountPaid})
-      : super(key: key);
+  ///Constructor for [ChapaWebView]
+  /// ignore: use_super_parameters
+  ChapaWebView({
+    Key? key,
+    required this.url,
+    required this.fallBackNamedUrl,
+    required this.transactionReference,
+    required this.amountPaid,
+    this.onPaymentFinished,
+  }) : super(key: key);
 
   @override
   State<ChapaWebView> createState() => _ChapaWebViewState();
@@ -47,26 +62,26 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   void checkConnectivity() async {
     connection = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) {
+        .listen((List<ConnectivityResult> result) {
       handleConnectivityChange(result);
     });
   }
 
-  void handleConnectivityChange(ConnectivityResult result) {
+  void handleConnectivityChange(List<ConnectivityResult> result) {
     if (result == ConnectivityResult.none) {
       setState(() {
         isOffline = true;
       });
       showErrorToast(ChapaStrings.connectionError);
       exitPaymentPage(ChapaStrings.connectionError);
-    } else if (result == ConnectivityResult.mobile ||
-        result == ConnectivityResult.wifi ||
-        result == ConnectivityResult.ethernet ||
-        result == ConnectivityResult.vpn) {
+    } else if (result.contains(ConnectivityResult.mobile) ||
+        result.contains(ConnectivityResult.wifi) ||
+        result.contains(ConnectivityResult.ethernet) ||
+        result.contains(ConnectivityResult.vpn)) {
       setState(() {
         isOffline = false;
       });
-    } else if (result == ConnectivityResult.bluetooth) {
+    } else if (result.contains(ConnectivityResult.bluetooth)) {
       setState(() {
         isOffline = false;
       });
@@ -74,18 +89,35 @@ class _ChapaWebViewState extends State<ChapaWebView> {
     }
   }
 
+  /// Exits the payment page and triggers navigation or the callback.
+  ///
+  /// If [fallBackNamedUrl] is empty, the [onPaymentFinished] callback is called
+  /// with the payment message, transaction reference, and amount paid.
+  /// Otherwise, navigates to the fallback route.
+  ///
+  /// [message]: The message describing the payment status.
   exitPaymentPage(String message) {
     if (!mounted) return;
-    Navigator.pushNamedAndRemoveUntil(
-      context,
-      widget.fallBackNamedUrl,
-      (Route<dynamic> route) => false,
-      arguments: {
-        'message': message,
-        'transactionReference': widget.transactionReference,
-        'paidAmount': widget.amountPaid
-      },
-    );
+    if (widget.fallBackNamedUrl.isEmpty) {
+      if (widget.onPaymentFinished != null) {
+        widget.onPaymentFinished!(
+          message,
+          widget.transactionReference,
+          widget.amountPaid,
+        );
+      }
+    } else {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        widget.fallBackNamedUrl,
+        (Route<dynamic> route) => false,
+        arguments: {
+          'message': message,
+          'transactionReference': widget.transactionReference,
+          'paidAmount': widget.amountPaid
+        },
+      );
+    }
   }
 
   @override
@@ -151,6 +183,11 @@ class _ChapaWebViewState extends State<ChapaWebView> {
 
                         return args.reduce((curr, next) => curr + next);
                       });
+                },
+                onProgressChanged: (controller, progress) {
+                  setState(() {
+                    this.progress = progress / 100;
+                  });
                 },
                 onUpdateVisitedHistory: (InAppWebViewController controller,
                     Uri? uri, androidIsReload) async {
