@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+///
 class NoConnection extends StatelessWidget {
+  ///
   const NoConnection({super.key});
 
   @override

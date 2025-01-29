@@ -3,7 +3,7 @@ import 'package:chapasdk/data/model/initiate_payment.dart';
 import 'package:chapasdk/data/model/response/direct_charge_success_response.dart';
 import 'package:chapasdk/data/model/network_response.dart';
 import 'package:chapasdk/data/model/request/direct_charge_request.dart';
-import 'package:chapasdk/data/model/request/validate_directCharge_request.dart';
+import 'package:chapasdk/data/model/request/validate_direct_charge_request.dart';
 import 'package:chapasdk/data/model/response/api_error_response.dart';
 import 'package:chapasdk/data/model/response/verify_direct_charge_response.dart';
 import 'package:chapasdk/data/services/payment_service.dart';
@@ -12,9 +12,19 @@ import 'package:meta/meta.dart';
 part 'chapa_native_checkout_event.dart';
 part 'chapa_native_checkout_state.dart';
 
+/// The ChapaNativeCheckoutBloc handles the logic for processing payments
+/// through the Chapa SDK. It listens for events like payment initiation and
+/// validation, and updates the state of the payment process accordingly.
 class ChapaNativeCheckoutBloc
     extends Bloc<ChapaNativeCheckoutEvent, ChapaNativeCheckoutState> {
+  /// The payment service used to interact with the Chapa API for payment
+  /// initialization and verification.
   PaymentService paymentService;
+
+  /// Constructor for ChapaNativeCheckoutBloc.
+  ///
+  /// [paymentService]: A required instance of [PaymentService] to handle
+  /// payment-related operations like initiating and verifying payments.
   ChapaNativeCheckoutBloc({required this.paymentService})
       : super(ChapaNativeCheckoutInitial()) {
     on<ChapaNativeCheckoutEvent>((event, emit) {
@@ -42,6 +52,11 @@ class ChapaNativeCheckoutBloc
                   mobile: event.directChargeRequest.mobile,
                   paymentMethod: event.directChargeRequest.paymentMethod),
               publicKey: event.publicKey,
+            ));
+          } else {
+            emit(ChapaNativeCheckoutPaymentInitiateSuccessState(
+              directChargeSuccessResponse: directChargeSuccessResponse,
+              isPaymentInitiateFailed: true,
             ));
           }
         } else if (networkResponse is ApiError) {

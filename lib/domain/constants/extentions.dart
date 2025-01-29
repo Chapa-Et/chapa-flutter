@@ -1,10 +1,11 @@
 import 'dart:math';
-
 import 'package:chapasdk/domain/constants/app_images.dart';
 import 'package:chapasdk/domain/constants/enums.dart';
 import 'package:intl/intl.dart';
 
-extension PaymentTypeExtention on LocalPaymentMethods {
+/// Extension on `LocalPaymentMethods` enum to provide additional functionality.
+extension PaymentTypeExtension on LocalPaymentMethods {
+  /// Returns the display name of the payment method.
   String displayName() {
     switch (this) {
       case LocalPaymentMethods.telebirr:
@@ -18,6 +19,7 @@ extension PaymentTypeExtention on LocalPaymentMethods {
     }
   }
 
+  /// Returns the string value of the payment method.
   String value() {
     switch (this) {
       case LocalPaymentMethods.telebirr:
@@ -31,19 +33,12 @@ extension PaymentTypeExtention on LocalPaymentMethods {
     }
   }
 
+  /// Returns the `VerificationType` associated with the payment method.
   VerificationType verificationType() {
-    switch (this) {
-      case LocalPaymentMethods.telebirr:
-        return VerificationType.ussd;
-      case LocalPaymentMethods.mpessa:
-        return VerificationType.ussd;
-      case LocalPaymentMethods.ebirr:
-        return VerificationType.ussd;
-      case LocalPaymentMethods.cbebirr:
-        return VerificationType.ussd;
-    }
+    return VerificationType.ussd; // All methods default to USSD in this implementation.
   }
 
+  /// Returns the icon path for the payment method.
   String iconPath() {
     switch (this) {
       case LocalPaymentMethods.telebirr:
@@ -58,14 +53,15 @@ extension PaymentTypeExtention on LocalPaymentMethods {
   }
 }
 
-extension StringExtention on String {
+/// Extension on `String` to provide additional utility methods.
+extension StringExtension on String {
+  /// Formats the string as Ethiopian Birr currency.
   String formattedBirr() {
     var noSymbolInUSFormat = NumberFormat.compactCurrency(locale: "am");
-
-    String amount = this;
-    return noSymbolInUSFormat.format(double.parse(amount));
+    return noSymbolInUSFormat.format(double.parse(this));
   }
 
+  /// Parses the string into a `VerificationType`.
   VerificationType parseAuthDataType() {
     switch (this) {
       case "ussd":
@@ -77,6 +73,7 @@ extension StringExtention on String {
     }
   }
 
+  /// Parses the string into a `Mode`.
   Mode parseMode() {
     switch (this) {
       case "live":
@@ -88,20 +85,20 @@ extension StringExtention on String {
     }
   }
 
+  /// Parses the string into a `PaymentStatus`.
   PaymentStatus parsePaymentStatus() {
-    {
-      switch (this) {
-        case "pending":
-          return PaymentStatus.pending;
-
-        default:
-          return PaymentStatus.pending;
-      }
+    switch (this) {
+      case "pending":
+        return PaymentStatus.pending;
+      default:
+        return PaymentStatus.pending; // Defaults to pending in this implementation.
     }
   }
 }
 
-extension VerificationTypeExtention on VerificationType {
+/// Extension on `VerificationType` to provide additional functionality.
+extension VerificationTypeExtension on VerificationType {
+  /// Returns the string value of the `VerificationType`.
   String getVerificationTypeValue() {
     switch (this) {
       case VerificationType.otp:
@@ -112,6 +109,7 @@ extension VerificationTypeExtention on VerificationType {
   }
 }
 
+/// Filters `LocalPaymentMethods` based on a list of string values.
 List<LocalPaymentMethods> getFilteredPaymentMethods(List<String> filterValues) {
   return LocalPaymentMethods.values.where((paymentMethod) {
     return filterValues.any((filter) =>
@@ -119,19 +117,18 @@ List<LocalPaymentMethods> getFilteredPaymentMethods(List<String> filterValues) {
   }).toList();
 }
 
-extension DateExtention on DateTime {
+/// Extension on `DateTime` to provide additional formatting functionality.
+extension DateExtension on DateTime {
+  /// Formats the `DateTime` to a readable string.
   String format() {
-    return DateFormat('EEE, MMM d yyyy, h:mm a').format(
-      this,
-    );
+    return DateFormat('EEE, MMM d yyyy, h:mm a').format(this);
   }
 }
 
+/// Generates a random transaction reference string.
 String generateTransactionRef() {
   var r = Random();
-  const _chars =
+  const chars =
       'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-  String transactionRef =
-      List.generate(10, (index) => _chars[r.nextInt(_chars.length)]).join();
-  return transactionRef;
+  return List.generate(10, (index) => chars[r.nextInt(chars.length)]).join();
 }
