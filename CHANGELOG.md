@@ -32,3 +32,12 @@
 
 * Update Assets from CDN
 * Update dependencies
+
+## 0.0.8
+
+* Updated all dependencies to their latest stable versions
+* Fixed issues reported by developers, including adaptiveness and responsiveness
+* Added a custom callback function to support developers using custom routing packages
+* Updated the README to guide developers on using direct charge in both Test and Live modes
+* Added inline comments to improve the points we have in dart package
+* Enhanced exception handling for web checkout to address known issues
