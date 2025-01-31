@@ -32,7 +32,6 @@ class Cart {
 
   Map<String, dynamic> toMap() {
     return {
-     
       'productId': productId,
       'productName': productName,
       'initialPrice': initialPrice,
