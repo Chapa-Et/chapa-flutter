@@ -1,6 +1,6 @@
 name: chapasdk
 description: Chapa flutter library to accept payment via telebirr, CBEBirr, E-birr and m-pessa etc.
-version: 0.0.8
+version: 0.0.8+1
 homepage: https://github.com/chapa-et/chapa-flutter
 
 environment:

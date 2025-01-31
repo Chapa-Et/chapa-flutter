@@ -41,3 +41,8 @@
 * Updated the README to guide developers on using direct charge in both Test and Live modes
 * Added inline comments to improve the points we have in dart package
 * Enhanced exception handling for web checkout to address known issues
+
+## 0.0.8+1
+
+* Fixed connectivity check type mismatch in ChapaWebView
+* Improved code formatting and style consistency
