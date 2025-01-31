@@ -55,7 +55,8 @@ class ApiResponse {
         break;
       case 401:
         try {
-          message = body is Map ? body['message'] ?? "Unauthorized" : "Unauthorized";
+          message =
+              body is Map ? body['message'] ?? "Unauthorized" : "Unauthorized";
           errors.add(message);
         } catch (error) {
           errors.add("Unauthorized");
@@ -67,14 +68,18 @@ class ApiResponse {
         break;
       case 429:
         try {
-          message = body is Map ? body['message'] ?? "Too many requests" : "Too many requests";
+          message = body is Map
+              ? body['message'] ?? "Too many requests"
+              : "Too many requests";
           errors.add(message);
         } catch (error) {
           errors.add("Too many requests");
         }
         break;
       default:
-        message = body is Map ? body["message"] ?? "Something went wrong." : "Something went wrong.";
+        message = body is Map
+            ? body["message"] ?? "Something went wrong."
+            : "Something went wrong.";
         break;
     }
 

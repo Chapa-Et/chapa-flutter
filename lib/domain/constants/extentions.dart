@@ -35,7 +35,8 @@ extension PaymentTypeExtension on LocalPaymentMethods {
 
   /// Returns the `VerificationType` associated with the payment method.
   VerificationType verificationType() {
-    return VerificationType.ussd; // All methods default to USSD in this implementation.
+    return VerificationType
+        .ussd; // All methods default to USSD in this implementation.
   }
 
   /// Returns the icon path for the payment method.
@@ -91,7 +92,8 @@ extension StringExtension on String {
       case "pending":
         return PaymentStatus.pending;
       default:
-        return PaymentStatus.pending; // Defaults to pending in this implementation.
+        return PaymentStatus
+            .pending; // Defaults to pending in this implementation.
     }
   }
 }

@@ -68,7 +68,7 @@ class _ChapaWebViewState extends State<ChapaWebView> {
   }
 
   void handleConnectivityChange(List<ConnectivityResult> result) {
-    if (result == ConnectivityResult.none) {
+    if (result.contains(ConnectivityResult.none)) {
       setState(() {
         isOffline = true;
       });
